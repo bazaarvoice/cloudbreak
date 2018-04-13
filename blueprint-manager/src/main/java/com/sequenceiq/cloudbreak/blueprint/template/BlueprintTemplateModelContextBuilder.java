@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.sequenceiq.cloudbreak.api.model.FileSystemType;
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
+import com.sequenceiq.cloudbreak.blueprint.sharedservice.SharedServiceConfigs;
 import com.sequenceiq.cloudbreak.blueprint.template.views.FileSystemConfigurationView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.FileSystemView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.GatewayView;
@@ -29,6 +30,8 @@ public class BlueprintTemplateModelContextBuilder {
     private Optional<GatewayView> gateway = Optional.empty();
 
     private Optional<HdfConfigs> hdfConfigs = Optional.empty();
+
+    private Optional<SharedServiceConfigs> sharedServiceConfigs = Optional.empty();
 
     private String clusterName;
 
@@ -145,12 +148,18 @@ public class BlueprintTemplateModelContextBuilder {
         return this;
     }
 
+    public BlueprintTemplateModelContextBuilder withSharedServiceConfigs(Optional<SharedServiceConfigs> sharedServiceConfigs) {
+        this.sharedServiceConfigs = sharedServiceConfigs;
+        return this;
+    }
+
     public Map<String, Object> build() {
         Map<String, Object> blueprintTemplateModelContext = new HashMap<>();
         blueprintTemplateModelContext.put("ldap", ldap.orElse(null));
         blueprintTemplateModelContext.put("gateway", gateway.orElse(null));
         blueprintTemplateModelContext.put("rds", rds);
         blueprintTemplateModelContext.put("fileSystemConfigs", fileSystemConfig);
+        blueprintTemplateModelContext.put("sharedService", sharedServiceConfigs.orElse(null));
         for (Entry<String, String> customEntry : customProperties.entrySet()) {
             blueprintTemplateModelContext.put(customEntry.getKey(), customEntry.getValue());
         }

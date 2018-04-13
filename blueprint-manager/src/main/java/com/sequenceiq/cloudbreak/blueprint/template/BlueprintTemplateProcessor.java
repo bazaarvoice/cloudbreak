@@ -52,6 +52,7 @@ public class BlueprintTemplateProcessor {
                 .withAdminEmail(source.getGeneralClusterConfigs().getIdentityUserEmail())
                 .withClusterName(source.getGeneralClusterConfigs().getClusterName())
                 .withLdap(source.getLdapConfig().orElse(null))
+                .withSharedServiceConfigs(source.getSharedServiceConfigs())
                 .withGateway(source.getGatewayView())
                 .withStackType(source.getBlueprintView().getType())
                 .withStackVersion(source.getBlueprintView().getVersion())
