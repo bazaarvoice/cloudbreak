@@ -141,7 +141,7 @@
           "ranger.ldap.user.searchfilter": "(cn=admin,dc=example,dc=org={0})",
           "ranger.ldap.url": "ldap://localhost:389",
           "ranger.ldap.ad.url": "ldap://localhost:389",
-          "ranger.jpa.jdbc.driver": "org.postgresql.Driver",
+          "ranger.jpa.jdbc.driver": "oracle.jdbc.driver.OracleDriver",
           "ranger.ldap.ad.base.dn": "cn=users,dc=example,dc=org",
           "ranger.ldap.base.dn": "cn=users,dc=example,dc=org",
           "ranger.ldap.group.searchbase": "cn=groups,dc=example,dc=org",
@@ -152,10 +152,10 @@
     {
       "admin-properties": {
         "properties": {
-          "DB_FLAVOR": "POSTGRES",
+          "DB_FLAVOR": "ORACLE",
           "db_name": "ranger",
           "db_user": "heyitsme",
-          "db_host": "10.1.1.1:5432",
+          "db_host": "10.1.1.1:5432:ranger",
           "db_password": "iamsoosecure"
         }
       }
@@ -163,7 +163,7 @@
     {
       "ranger-env": {
         "properties": {
-          "ranger_privelege_user_jdbc_url": "jdbc:postgresql://10.1.1.1:5432",
+          "ranger_privelege_user_jdbc_url": "jdbc:oracle:@10.1.1.1:5432",
           "create_db_dbuser": "false"
         }
       }

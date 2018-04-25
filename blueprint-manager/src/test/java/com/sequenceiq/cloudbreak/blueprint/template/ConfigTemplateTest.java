@@ -18,6 +18,7 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.google.common.collect.Sets;
 import com.sequenceiq.cloudbreak.TestUtil;
+import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
@@ -80,6 +81,8 @@ public class ConfigTemplateTest {
                         withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig() },
                 { "blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-with-rds.json",
                         rangerRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() },
+                { "blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-with-oracle-rds.json",
+                        rangerRdsConfigWhenOracleRdsPresentedThenShouldReturnWithRdsConfig() },
                 { "blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-without-rds.json",
                         objectWithoutEverything() },
                 { "blueprints/configurations/yarn/global.handlebars", "configurations/yarn/global-without-container.json",
@@ -271,6 +274,19 @@ public class ConfigTemplateTest {
 
     public static Map<String, Object> rangerRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() throws JsonProcessingException {
         RDSConfig rdsConfig = TestUtil.rdsConfig(RdsType.RANGER);
+
+        // TODO we should somehow handle this
+        //Map<String, String> attributes = new HashMap<>();
+        //attributes.put("rangerAdminPassword", "rangerAdminPassword");
+        //rdsConfig.setAttributes(new Json(attributes));
+
+        return new BlueprintTemplateModelContextBuilder()
+                .withRdsConfigs(Sets.newHashSet(rdsConfig))
+                .build();
+    }
+
+    public static Map<String, Object> rangerRdsConfigWhenOracleRdsPresentedThenShouldReturnWithRdsConfig() throws JsonProcessingException {
+        RDSConfig rdsConfig = TestUtil.rdsConfig(RdsType.RANGER, DatabaseVendor.ORACLE11);
 
         // TODO we should somehow handle this
         //Map<String, String> attributes = new HashMap<>();

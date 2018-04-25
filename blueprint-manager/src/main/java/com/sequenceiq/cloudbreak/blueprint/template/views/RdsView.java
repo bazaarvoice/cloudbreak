@@ -1,8 +1,14 @@
 package com.sequenceiq.cloudbreak.blueprint.template.views;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.ws.rs.BadRequestException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
+import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.blueprint.template.views.dialect.DefaultRdsViewDialect;
 import com.sequenceiq.cloudbreak.blueprint.template.views.dialect.OracleRdsViewDialect;
 import com.sequenceiq.cloudbreak.blueprint.template.views.dialect.RdsViewDialect;
@@ -10,6 +16,10 @@ import com.sequenceiq.cloudbreak.blueprint.template.views.dialect.ServiceIdOracl
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 
 public class RdsView {
+
+    private static final String WITHOUT_JDBC_PREFIX_REGEX = "^(.*?):(\\d*)[:/]?(\\w+)?";
+
+    private static final int MAX_GROUP_COUNT_NUMBER = 3;
 
     private final String connectionURL;
 
@@ -23,73 +33,84 @@ public class RdsView {
 
     private final String host;
 
-    private final String hostWithPort;
-
     private final String hostWithPortWithJdbc;
 
     private final String subprotocol;
 
-    private String lowerCaseDatabaseEngine;
+    private final String lowerCaseDatabaseEngine;
 
-    private String port;
+    private final String connectionString;
 
-    private String fancyName;
+    private final String port;
 
-    private String databaseType;
+    private final String fancyName;
 
-    private String ambariVendor;
+    private final String databaseType;
 
-    private String upperCaseDatabaseEngine;
+    private final String ambariVendor;
 
-    private RdsViewDialect rdsViewDialect;
+    private final String upperCaseDatabaseEngine;
 
-    private String withoutJDBCPrefix;
+    private final String withoutJDBCPrefix;
+
+    private final RdsViewDialect rdsViewDialect;
 
     public RdsView(RDSConfig rdsConfig) {
         connectionURL = rdsConfig.getConnectionURL();
         connectionUserName = rdsConfig.getConnectionUserName();
         connectionPassword = rdsConfig.getConnectionPassword();
-        createDialect(rdsConfig);
+        rdsViewDialect = createDialect(rdsConfig);
         String[] split = connectionURL.split(rdsViewDialect.jdbcPrefixSplitter());
         subprotocol = getSubprotocol(split);
 
         withoutJDBCPrefix = split[split.length - 1];
-        int portDelimiterIndex = withoutJDBCPrefix.indexOf(':');
-        port = "";
-        if (portDelimiterIndex > 0) {
-            host = withoutJDBCPrefix.substring(0, portDelimiterIndex);
-            int i = withoutJDBCPrefix.indexOf(rdsViewDialect.databaseNameSplitter(), portDelimiterIndex + 1);
-            if (i > 0) {
-                port = withoutJDBCPrefix.substring(portDelimiterIndex + 1, i);
-            }
-            if (i == -1 && host.length() < withoutJDBCPrefix.length()) {
-                port = withoutJDBCPrefix.substring(portDelimiterIndex + 1, withoutJDBCPrefix.length());
-            }
-        } else {
-            int i = withoutJDBCPrefix.indexOf(rdsViewDialect.databaseNameSplitter());
-            host = i > 0 ? withoutJDBCPrefix.substring(0, i) : withoutJDBCPrefix;
+
+        Pattern compile = Pattern.compile(WITHOUT_JDBC_PREFIX_REGEX);
+        Matcher matcher = compile.matcher(withoutJDBCPrefix);
+
+        int hostGroupIndex = 1;
+        int hostPortIndex = 2;
+        int databaseGroupIndex = MAX_GROUP_COUNT_NUMBER;
+        if (!matcher.find() || matcher.groupCount() != MAX_GROUP_COUNT_NUMBER
+                || StringUtils.isEmpty(matcher.group(hostGroupIndex))
+                || StringUtils.isEmpty(matcher.group(hostPortIndex))
+                || StringUtils.isEmpty(matcher.group(databaseGroupIndex))) {
+            throw new BadRequestException("Invalid JDBC URL");
         }
 
-        databaseName = getDatabaseName(connectionURL);
+        host = matcher.group(hostGroupIndex);
+        port = matcher.group(hostPortIndex);
+        databaseName = matcher.group(databaseGroupIndex);
+
         hostWithPortWithJdbc = connectionURL.replaceAll(rdsViewDialect.databaseNameSplitter() + databaseName + "$", "");
-        hostWithPort = createConnectionHost();
         connectionDriver = rdsConfig.getConnectionDriver();
-        if (rdsConfig.getDatabaseEngine() != null) {
-            DatabaseVendor databaseVendor = DatabaseVendor.valueOf(rdsConfig.getDatabaseEngine());
-            lowerCaseDatabaseEngine = databaseVendor.ambariVendor().toLowerCase();
-            fancyName = databaseVendor.fancyName();
-            ambariVendor = databaseVendor.ambariVendor();
-            databaseType = databaseVendor.databaseType();
-            upperCaseDatabaseEngine = databaseVendor.ambariVendor().toUpperCase();
+        DatabaseVendor databaseVendor = DatabaseVendor.valueOf(rdsConfig.getDatabaseEngine());
+        lowerCaseDatabaseEngine = databaseVendor.ambariVendor().toLowerCase();
+        fancyName = databaseVendor.fancyName();
+        ambariVendor = databaseVendor.ambariVendor();
+        databaseType = databaseVendor.databaseType();
+        upperCaseDatabaseEngine = databaseVendor.ambariVendor().toUpperCase();
+        String pattern;
+        if (rdsConfig.getType().equalsIgnoreCase(RdsType.RANGER.name())) {
+            if (databaseVendor == DatabaseVendor.ORACLE11 || databaseVendor == DatabaseVendor.ORACLE12) {
+                pattern = "%s:%s" + rdsViewDialect.databaseNameSplitter() + "%s";
+            } else {
+                pattern = "%s:%s";
+            }
+            connectionString = String.format(pattern, host, port, databaseName);
+        } else {
+            connectionString = connectionURL;
         }
     }
 
-    private void createDialect(RDSConfig rdsConfig) {
+    private RdsViewDialect createDialect(RDSConfig rdsConfig) {
+        RdsViewDialect rdsViewDialect;
         if (rdsConfig.getDatabaseEngine().equals(DatabaseVendor.ORACLE11.name()) || rdsConfig.getDatabaseEngine().equals(DatabaseVendor.ORACLE12.name())) {
             rdsViewDialect = rdsConfig.getConnectionURL().lastIndexOf("/") > 0 ? new ServiceIdOracleRdsViewDialect() : new OracleRdsViewDialect();
         } else {
             rdsViewDialect = new DefaultRdsViewDialect();
         }
+        return rdsViewDialect;
     }
 
     public String getConnectionURL() {
@@ -110,10 +131,6 @@ public class RdsView {
 
     public String getDatabaseType() {
         return databaseType;
-    }
-
-    public String getHostWithPort() {
-        return hostWithPort;
     }
 
     public String getHost() {
@@ -160,8 +177,8 @@ public class RdsView {
         return withoutJDBCPrefix;
     }
 
-    public void setWithoutJDBCPrefix(String withoutJDBCPrefix) {
-        this.withoutJDBCPrefix = withoutJDBCPrefix;
+    public String getConnectionString() {
+        return connectionString;
     }
 
     private String getDatabaseName(String connectionURL) {
@@ -171,14 +188,6 @@ public class RdsView {
             databaseName = split[split.length - 1];
         }
         return databaseName;
-    }
-
-    private String createConnectionHost() {
-        String result = host;
-        if (StringUtils.isNotBlank(port)) {
-            result = host + ':' + port;
-        }
-        return result;
     }
 
     private String getSubprotocol(String[] split) {

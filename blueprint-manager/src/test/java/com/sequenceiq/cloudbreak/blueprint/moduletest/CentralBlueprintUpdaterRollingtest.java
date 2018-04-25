@@ -9,6 +9,7 @@ import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvi
 import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvider.blueprintObjectWhenHiveInteractivePresentedTheLlapShouldConfigured;
 import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvider.blueprintObjectWhenKerberosPresentedThenKerberosShouldConfigured;
 import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvider.blueprintObjectWhenLdapAndDruidRdsConfigured;
+import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvider.blueprintObjectWhenLdapConfiguredWithOracleRdsRanger;
 import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvider.blueprintObjectWhenLdapConfiguredWithRdsRanger;
 import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvider.blueprintObjectWhenLdapPresentedThenRangerAndHadoopLdapShouldConfigured;
 import static com.sequenceiq.cloudbreak.blueprint.moduletest.BlueprintModelProvider.blueprintObjectWhenNifiAndHdfPresentedThenHdfShouldConfigured;
@@ -75,6 +76,7 @@ public class CentralBlueprintUpdaterRollingtest extends CentralBlueprintContext 
                 put("llap", blueprintObjectWhenHiveInteractivePresentedTheLlapShouldConfigured());
                 put("hbase", blueprintObjectWhenNothingSpecialThere());
                 put("ldap-with-rds-ranger", blueprintObjectWhenLdapConfiguredWithRdsRanger());
+                put("ldap-with-oracle-rds-ranger", blueprintObjectWhenLdapConfiguredWithOracleRdsRanger());
                 put("ldap-with-rds-druid", blueprintObjectWhenLdapAndDruidRdsConfigured());
                 put("atlas-without-ldap", blueprintObjectWhenAtlasPresentedShouldConfigured());
                 put("atlas-with-ldap", blueprintObjectWhenAtlasAndLdapPresentedThenBothShouldConfigured());
