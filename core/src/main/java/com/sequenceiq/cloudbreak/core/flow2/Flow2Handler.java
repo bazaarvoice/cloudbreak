@@ -88,6 +88,9 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
     @Resource
     private Map<String, FlowConfiguration<?>> flowConfigurationMap;
 
+    @Resource
+    private List<String> failHandledEvents;
+
     @Inject
     private FlowChains flowChains;
 
@@ -136,6 +139,7 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
                     LOGGER.debug("flow control event arrived: key: {}, flowid: {}, payload: {}", key, flowId, payload);
                     Flow flow = runningFlows.get(flowId);
                     if (flow != null) {
+                        flowLogService.updateLastFlowLogStatus(flowId, failHandledEvents.contains(key));
                         flowLogService.save(flowId, flowChainId, key, payload, flow.getVariables(), flow.getFlowConfigClass(), flow.getCurrentState());
                         flow.sendEvent(key, payload);
                     } else {
@@ -202,11 +206,15 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
 
     public void restartFlow(String flowId) {
         FlowLog flowLog = flowLogRepository.findFirstByFlowIdOrderByCreatedDesc(flowId);
+        restartFlow(flowLog);
+    }
+
+    public void restartFlow(FlowLog flowLog) {
         if (RESTARTABLE_FLOWS.contains(flowLog.getFlowType())) {
             Optional<FlowConfiguration<?>> flowConfig = flowConfigs.stream()
                     .filter(fc -> fc.getClass().equals(flowLog.getFlowType())).findFirst();
             Payload payload = (Payload) JsonReader.jsonToJava(flowLog.getPayload());
-            Flow flow = flowConfig.get().createFlow(flowId, payload.getStackId());
+            Flow flow = flowConfig.get().createFlow(flowLog.getFlowId(), payload.getStackId());
             runningFlows.put(flow, flowLog.getFlowChainId());
             if (flowLog.getFlowChainId() != null) {
                 flowChainHandler.restoreFlowChain(flowLog.getFlowChainId());
@@ -215,11 +223,11 @@ public class Flow2Handler implements Consumer<Event<? extends Payload>> {
             flow.initialize(flowLog.getCurrentState(), variables);
             RestartAction restartAction = flowConfig.get().getRestartAction(flowLog.getNextEvent());
             if (restartAction != null) {
-                restartAction.restart(flowId, flowLog.getFlowChainId(), flowLog.getNextEvent(), payload);
+                restartAction.restart(flowLog.getFlowId(), flowLog.getFlowChainId(), flowLog.getNextEvent(), payload);
                 return;
             }
         }
-        flowLogService.terminate(flowLog.getStackId(), flowId);
+        flowLogService.terminate(flowLog.getStackId(), flowLog.getFlowId());
     }
 
     private String getFlowId(Event<?> event) {
