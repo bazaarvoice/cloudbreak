@@ -49,7 +49,7 @@ public class GeneralClusterConfigsView {
         this.ambariIp = generalClusterConfigs.getAmbariIp();
         this.orchestratorType = generalClusterConfigs.getOrchestratorType();
         this.nodeCount = generalClusterConfigs.getNodeCount();
-        this.containerExecutor = OrchestratorType.CONTAINER.equals(generalClusterConfigs.getOrchestratorType());
+        this.containerExecutor = ExecutorType.CONTAINER.equals(generalClusterConfigs.getExecutorType());
         this.primaryGatewayInstanceDiscoveryFQDN = generalClusterConfigs.getPrimaryGatewayInstanceDiscoveryFQDN().orElse(null);
         this.llapNodeCount = generalClusterConfigs.getNodeCount() - 1;
     }

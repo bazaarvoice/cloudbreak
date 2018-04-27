@@ -1,5 +1,5 @@
 {
-{{{#eq general.orchestratorType 'CONTAINER'}}}
+{{{#iftrue general.containerExecutor}}}
   "yarn-site": {
     "yarn.acl.enable": "true",
     "yarn.nodemanager.linux-container-executor.nonsecure-mode.local-user": "nobody",
@@ -16,5 +16,5 @@
   "yarn-env": {
     "min.user.id": "50"
   }
-{{{/eq}}}
+{{{/iftrue}}}
 }

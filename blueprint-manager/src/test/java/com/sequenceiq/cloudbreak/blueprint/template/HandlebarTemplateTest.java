@@ -20,6 +20,7 @@ import com.github.jknack.handlebars.Template;
 import com.google.common.collect.Sets;
 import com.sequenceiq.cloudbreak.TestUtil;
 import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
+import com.sequenceiq.cloudbreak.api.model.ExecutorType;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
 import com.sequenceiq.cloudbreak.blueprint.template.views.BlueprintView;
@@ -186,7 +187,7 @@ public class HandlebarTemplateTest {
     public static Map<String, Object> objectContainerExecutorIsTrueThenShouldReturnWithContainerConfigs() {
         GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
         generalClusterConfigs.setOrchestratorType(OrchestratorType.CONTAINER);
-
+        generalClusterConfigs.setExecutorType(ExecutorType.CONTAINER);
         return new BlueprintTemplateModelContextBuilder()
                 .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
