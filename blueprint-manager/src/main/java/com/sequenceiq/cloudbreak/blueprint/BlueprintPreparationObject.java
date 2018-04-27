@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
-import com.sequenceiq.cloudbreak.blueprint.sharedservice.SharedServiceConfigs;
+import com.sequenceiq.cloudbreak.blueprint.template.views.SharedServiceConfigsView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.BlueprintView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.FileSystemConfigurationView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.GatewayView;
@@ -35,7 +35,7 @@ public class BlueprintPreparationObject {
 
     private final Optional<LdapConfig> ldapConfig;
 
-    private final Optional<SharedServiceConfigs> sharedServiceConfigs;
+    private final Optional<SharedServiceConfigsView> sharedServiceConfigs;
 
     private final Optional<String> stackRepoDetailsHdpVersion;
 
@@ -111,7 +111,7 @@ public class BlueprintPreparationObject {
         return blueprintView;
     }
 
-    public Optional<SharedServiceConfigs> getSharedServiceConfigs() {
+    public Optional<SharedServiceConfigsView> getSharedServiceConfigs() {
         return sharedServiceConfigs;
     }
 
@@ -137,7 +137,7 @@ public class BlueprintPreparationObject {
 
         private Optional<FlexSubscription> flexSubscription = Optional.empty();
 
-        private Optional<SharedServiceConfigs> sharedServiceConfigs = Optional.empty();
+        private Optional<SharedServiceConfigsView> sharedServiceConfigs = Optional.empty();
 
         private GeneralClusterConfigs generalClusterConfigs;
 
@@ -227,8 +227,8 @@ public class BlueprintPreparationObject {
             return this;
         }
 
-        public Builder withSharedServiceConfigs(SharedServiceConfigs sharedServiceConfigs) {
-            this.sharedServiceConfigs = Optional.ofNullable(sharedServiceConfigs);
+        public Builder withSharedServiceConfigs(SharedServiceConfigsView sharedServiceConfigsView) {
+            this.sharedServiceConfigs = Optional.ofNullable(sharedServiceConfigsView);
             return this;
         }
 

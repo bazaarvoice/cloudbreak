@@ -19,7 +19,7 @@ import com.sequenceiq.cloudbreak.blueprint.BlueprintPreparationObject;
 import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessingException;
 import com.sequenceiq.cloudbreak.blueprint.GeneralClusterConfigsProvider;
 import com.sequenceiq.cloudbreak.blueprint.filesystem.FileSystemConfigurationProvider;
-import com.sequenceiq.cloudbreak.blueprint.sharedservice.SharedServiceConfigs;
+import com.sequenceiq.cloudbreak.blueprint.template.views.SharedServiceConfigsView;
 import com.sequenceiq.cloudbreak.blueprint.sharedservice.SharedServiceConfigsProvider;
 import com.sequenceiq.cloudbreak.blueprint.template.views.BlueprintView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.FileSystemConfigurationView;
@@ -101,7 +101,7 @@ public class StackRequestToBlueprintPreparationObjectConverter extends AbstractC
             if (sharedService != null && Strings.isNullOrEmpty(sharedService.getSharedCluster())) {
                 dataLakeStack = stackService.getPublicStack(sharedService.getSharedCluster(), identityUser);
             }
-            SharedServiceConfigs sharedServiceConfigs = sharedServiceConfigsProvider
+            SharedServiceConfigsView sharedServiceConfigsView = sharedServiceConfigsProvider
                     .createSharedServiceConfigs(blueprint, source.getCluster().getAmbari().getPassword(), dataLakeStack);
 
             return BlueprintPreparationObject.Builder.builder()
@@ -115,7 +115,7 @@ public class StackRequestToBlueprintPreparationObjectConverter extends AbstractC
                     .withSmartSenseSubscriptionId(smartsenseSubscriptionId)
                     .withLdapConfig(ldapConfig)
                     .withKerberosConfig(kerberosConfig)
-                    .withSharedServiceConfigs(sharedServiceConfigs)
+                    .withSharedServiceConfigs(sharedServiceConfigsView)
                     .build();
         } catch (BlueprintProcessingException e) {
             throw new CloudbreakServiceException(e.getMessage(), e);

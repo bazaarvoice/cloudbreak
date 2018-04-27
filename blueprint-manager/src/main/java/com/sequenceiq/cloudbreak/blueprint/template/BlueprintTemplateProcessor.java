@@ -1,7 +1,5 @@
 package com.sequenceiq.cloudbreak.blueprint.template;
 
-import static com.sequenceiq.cloudbreak.api.model.ExecutorType.CONTAINER;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -44,23 +42,16 @@ public class BlueprintTemplateProcessor {
         blueprintInputs.putAll(customProperties);
 
         return new BlueprintTemplateModelContextBuilder()
-                .withClusterAdminFirstname(source.getGeneralClusterConfigs().getUserName())
-                .withClusterAdminLastname(source.getGeneralClusterConfigs().getUserName())
-                .withClusterAdminPassword(source.getGeneralClusterConfigs().getPassword())
-                .withLlapNodeCounts(source.getGeneralClusterConfigs().getNodeCount() - 1)
-                .withContainerExecutor(CONTAINER.equals(source.getGeneralClusterConfigs().getExecutorType()))
-                .withAdminEmail(source.getGeneralClusterConfigs().getIdentityUserEmail())
-                .withClusterName(source.getGeneralClusterConfigs().getClusterName())
                 .withLdap(source.getLdapConfig().orElse(null))
-                .withSharedServiceConfigs(source.getSharedServiceConfigs())
+                .withSharedServiceConfigs(source.getSharedServiceConfigs().orElse(null))
                 .withComponents(source.getBlueprintView().getComponents())
                 .withGateway(source.getGatewayView())
-                .withStackType(source.getBlueprintView().getType())
-                .withStackVersion(source.getBlueprintView().getVersion())
+                .withBlueprintView(source.getBlueprintView())
                 .withRdsConfigs(source.getRdsConfigs())
                 .withFileSystemConfigs(source.getFileSystemConfigurationView().orElse(null))
                 .withCustomProperties(blueprintInputs)
-                .withHdfConfigs(source.getHdfConfigs())
+                .withGeneralClusterConfigs(source.getGeneralClusterConfigs())
+                .withHdfConfigs(source.getHdfConfigs().orElse(null))
                 .build();
     }
 }

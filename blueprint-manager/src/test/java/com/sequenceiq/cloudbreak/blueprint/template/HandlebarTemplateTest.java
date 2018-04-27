@@ -22,7 +22,10 @@ import com.sequenceiq.cloudbreak.TestUtil;
 import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
-import com.sequenceiq.cloudbreak.blueprint.sharedservice.SharedServiceConfigs;
+import com.sequenceiq.cloudbreak.blueprint.template.views.BlueprintView;
+import com.sequenceiq.cloudbreak.blueprint.template.views.SharedServiceConfigsView;
+import com.sequenceiq.cloudbreak.blueprint.templates.GeneralClusterConfigs;
+import com.sequenceiq.cloudbreak.common.model.OrchestratorType;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 
 @RunWith(Parameterized.class)
@@ -89,6 +92,10 @@ public class HandlebarTemplateTest {
                         rangerRdsConfigWhenOracleRdsPresentedThenShouldReturnWithRdsConfig()},
                 {"blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-without-rds.json",
                         objectWithoutEverything()},
+                {"blueprints/configurations/beacon/rds.handlebars", "configurations/beacon/beacon-with-rds.json",
+                        beaconWhenRdsPresentedThenShouldReturnWithRdsConfigs()},
+                {"blueprints/configurations/beacon/rds.handlebars", "configurations/beacon/beacon-without-rds.json",
+                        objectWithoutEverything()},
                 {"blueprints/configurations/yarn/global.handlebars", "configurations/yarn/global-without-container.json",
                         objectContainerExecutorIsFalseThenShouldReturnWithoutContainerConfigs()},
                 {"blueprints/configurations/yarn/global.handlebars", "configurations/yarn/global-with-container.json",
@@ -132,8 +139,11 @@ public class HandlebarTemplateTest {
     }
 
     public static Map<String, Object> objectWithoutEverything() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("cloudbreak123!");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withClusterAdminPassword("cloudbreak123!")
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
@@ -143,12 +153,20 @@ public class HandlebarTemplateTest {
                 .build();
     }
 
+    public static Map<String, Object> beaconWhenRdsPresentedThenShouldReturnWithRdsConfigs() {
+        return new BlueprintTemplateModelContextBuilder()
+                .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.BEACON)))
+                .build();
+    }
+
     public static Map<String, Object> zeppelinWhenStackVersionIsNot25ThenShouldReturnWithZeppelinShiroIniConfigs() {
         Map<String, Object> properties = new HashMap<>();
         properties.put("blueprints_basics_zeppelin_shiro_ini_content", "testshiroini");
 
+        BlueprintView blueprintView = new BlueprintView("blueprintText", "2.6", "HDP");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withStackVersion("2.6")
+                .withBlueprintView(blueprintView)
                 .withCustomProperties(properties)
                 .build();
     }
@@ -157,27 +175,38 @@ public class HandlebarTemplateTest {
         Map<String, Object> properties = new HashMap<>();
         properties.put("blueprints_basics_zeppelin_shiro_ini_content", "testshiroini");
 
+        BlueprintView blueprintView = new BlueprintView("blueprintText", "2.5", "HDP");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withStackVersion("2.5")
+                .withBlueprintView(blueprintView)
                 .withCustomProperties(properties)
                 .build();
     }
 
     public static Map<String, Object> objectContainerExecutorIsTrueThenShouldReturnWithContainerConfigs() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setOrchestratorType(OrchestratorType.CONTAINER);
+
         return new BlueprintTemplateModelContextBuilder()
-                .withContainerExecutor(true)
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> objectContainerExecutorIsFalseThenShouldReturnWithoutContainerConfigs() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setOrchestratorType(OrchestratorType.HOST);
+
         return new BlueprintTemplateModelContextBuilder()
-                .withContainerExecutor(false)
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> llapObjectWhenNodeCountPresented() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setNodeCount(6);
+
         return new BlueprintTemplateModelContextBuilder()
-                .withLlapNodeCounts(5)
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
@@ -194,77 +223,102 @@ public class HandlebarTemplateTest {
     }
 
     public static Map<String, Object> druidSupersetRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
         return new BlueprintTemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.SUPERSET)))
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminLastname("lastname")
-                .withClusterAdminFirstname("firstname")
-                .withAdminEmail("admin@example.com")
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> druidSupersetWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminLastname("lastname")
-                .withClusterAdminFirstname("firstname")
-                .withAdminEmail("admin@example.com")
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> druidRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
         return new BlueprintTemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.DRUID)))
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminLastname("lastname")
-                .withClusterAdminFirstname("firstname")
-                .withAdminEmail("admin@example.com")
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> druidWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminLastname("lastname")
-                .withClusterAdminFirstname("firstname")
-                .withAdminEmail("admin@example.com")
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> supersetRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
         return new BlueprintTemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(TestUtil.rdsConfig(RdsType.SUPERSET)))
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminLastname("lastname")
-                .withClusterAdminFirstname("firstname")
-                .withAdminEmail("admin@example.com")
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> supersetWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminLastname("lastname")
-                .withClusterAdminFirstname("firstname")
-                .withAdminEmail("admin@example.com")
+                .withGeneralClusterConfigs(generalClusterConfigs)
                 .build();
     }
 
     public static Map<String, Object> nifiConfigWhenHdfPresentedThenShouldReturnWithNifiConfig(boolean withProxyHost) {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
+        BlueprintView blueprintView = new BlueprintView("blueprintText", "2.6", "HDF");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminFirstname("firstname")
-                .withHdfConfigs(Optional.of(new HdfConfigs("nifigtargets", "nifigtargets", withProxyHost ? Optional.of("nifiproxyhost") : Optional.empty())))
-                .withStackType("HDF")
+                .withGeneralClusterConfigs(generalClusterConfigs)
+                .withHdfConfigs(new HdfConfigs("nifigtargets", "nifigtargets",
+                        withProxyHost ? Optional.of("nifiproxyhost") : Optional.empty()))
+                .withBlueprintView(blueprintView)
                 .build();
     }
 
     public static Map<String, Object> nifiConfigWhenHdfNotPresentedThenShouldReturnWithNotNifiConfig() {
+        GeneralClusterConfigs generalClusterConfigs = new GeneralClusterConfigs();
+        generalClusterConfigs.setPassword("adminPassword");
+        generalClusterConfigs.setUserName("lastname");
+        generalClusterConfigs.setIdentityUserEmail("admin@example.com");
+
+        BlueprintView blueprintView = new BlueprintView("blueprintText", "2.6", "HDP");
+
         return new BlueprintTemplateModelContextBuilder()
-                .withClusterAdminPassword("adminPassword")
-                .withClusterAdminFirstname("firstname")
-                .withHdfConfigs(Optional.of(new HdfConfigs("nifigtargets", "nifigtargets", Optional.empty())))
-                .withStackType("HDP")
+                .withGeneralClusterConfigs(generalClusterConfigs)
+                .withHdfConfigs(new HdfConfigs("nifigtargets", "nifigtargets", Optional.empty()))
+                .withBlueprintView(blueprintView)
                 .build();
     }
 
@@ -294,13 +348,13 @@ public class HandlebarTemplateTest {
 
     public static Map<String, Object> sSConfigWhenSSAndDatalakePresentedThenShouldReturnWithSSDatalakeConfig() throws JsonProcessingException {
         return new BlueprintTemplateModelContextBuilder()
-                .withSharedServiceConfigs(datalakeSharedServiceConfig())
+                .withSharedServiceConfigs(datalakeSharedServiceConfig().get())
                 .build();
     }
 
     public static Map<String, Object> sSConfigWhenNoSSAndDatalakePresentedThenShouldReturnWithoutSSDatalakeConfig() throws JsonProcessingException {
         return new BlueprintTemplateModelContextBuilder()
-                .withSharedServiceConfigs(attachedClusterSharedServiceConfig())
+                .withSharedServiceConfigs(attachedClusterSharedServiceConfig().get())
                 .withCustomProperties(Maps.newHashMap("REMOTE_CLUSTER_NAME", "datalake-1"))
                 .build();
     }
@@ -337,16 +391,16 @@ public class HandlebarTemplateTest {
         return readFileFromClasspath(String.format("%s", file));
     }
 
-    private static Optional<SharedServiceConfigs> datalakeSharedServiceConfig() {
-        SharedServiceConfigs sharedServiceConfigs = new SharedServiceConfigs();
-        sharedServiceConfigs.setDatalakeCluster(true);
-        return Optional.of(sharedServiceConfigs);
+    private static Optional<SharedServiceConfigsView> datalakeSharedServiceConfig() {
+        SharedServiceConfigsView sharedServiceConfigsView = new SharedServiceConfigsView();
+        sharedServiceConfigsView.setDatalakeCluster(true);
+        return Optional.of(sharedServiceConfigsView);
     }
 
-    private static Optional<SharedServiceConfigs> attachedClusterSharedServiceConfig() {
-        SharedServiceConfigs sharedServiceConfigs = new SharedServiceConfigs();
-        sharedServiceConfigs.setAttachedCluster(true);
-        sharedServiceConfigs.setRangerAdminPassword("cloudbreak123!");
-        return Optional.of(sharedServiceConfigs);
+    private static Optional<SharedServiceConfigsView> attachedClusterSharedServiceConfig() {
+        SharedServiceConfigsView sharedServiceConfigsView = new SharedServiceConfigsView();
+        sharedServiceConfigsView.setAttachedCluster(true);
+        sharedServiceConfigsView.setRangerAdminPassword("cloudbreak123!");
+        return Optional.of(sharedServiceConfigsView);
     }
 }

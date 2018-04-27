@@ -1,6 +1,6 @@
-package com.sequenceiq.cloudbreak.blueprint.sharedservice;
+package com.sequenceiq.cloudbreak.blueprint.template.views;
 
-public class SharedServiceConfigs {
+public class SharedServiceConfigsView {
 
     private String rangerAdminPassword;
 

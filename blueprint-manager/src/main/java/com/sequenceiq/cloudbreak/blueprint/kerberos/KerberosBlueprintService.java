@@ -16,6 +16,7 @@ import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessingException;
 import com.sequenceiq.cloudbreak.blueprint.BlueprintProcessorFactory;
 import com.sequenceiq.cloudbreak.blueprint.BlueprintTextProcessor;
 import com.sequenceiq.cloudbreak.blueprint.configuration.SiteConfigurations;
+import com.sequenceiq.cloudbreak.blueprint.template.views.KerberosView;
 import com.sequenceiq.cloudbreak.domain.KerberosConfig;
 import com.sequenceiq.cloudbreak.util.FileReaderUtils;
 

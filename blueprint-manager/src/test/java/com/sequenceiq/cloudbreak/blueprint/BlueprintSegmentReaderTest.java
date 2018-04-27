@@ -26,9 +26,9 @@ public class BlueprintSegmentReaderTest {
     @Before
     public void setup() throws IOException {
         ReflectionTestUtils.setField(underTest, "resourceLoader", annotationConfigEmbeddedWebApplicationContext);
-        ReflectionTestUtils.setField(underTest, "blueprintTemplatePath", "templates/blueprint_templates");
-        ReflectionTestUtils.setField(underTest, "basicTemplatePath", "templates/basic_templates");
-        ReflectionTestUtils.setField(underTest, "settingsTemplatePath", "templates/settings_templates");
+        ReflectionTestUtils.setField(underTest, "blueprintTemplatePath", "blueprints/configurations");
+        ReflectionTestUtils.setField(underTest, "basicTemplatePath", "blueprints/basics");
+        ReflectionTestUtils.setField(underTest, "settingsTemplatePath", "blueprints/settings");
     }
 
     @Test
@@ -38,7 +38,7 @@ public class BlueprintSegmentReaderTest {
         Map<ServiceName, TemplateFiles> settingsFiles = underTest.collectAllSettingsFile();
 
         Assert.assertEquals(configFiles.size(), 1);
-        Assert.assertEquals(serviceFiles.size(), 9);
+        Assert.assertEquals(14, serviceFiles.size());
         Assert.assertEquals(settingsFiles.size(), 1);
     }
 }

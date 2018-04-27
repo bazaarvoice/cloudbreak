@@ -9,12 +9,16 @@ import java.util.Set;
 
 import com.sequenceiq.cloudbreak.api.model.FileSystemType;
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
-import com.sequenceiq.cloudbreak.blueprint.sharedservice.SharedServiceConfigs;
+import com.sequenceiq.cloudbreak.blueprint.template.views.BlueprintView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.FileSystemConfigurationView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.FileSystemView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.GatewayView;
+import com.sequenceiq.cloudbreak.blueprint.template.views.GeneralClusterConfigsView;
+import com.sequenceiq.cloudbreak.blueprint.template.views.HdfConfigView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.LdapView;
 import com.sequenceiq.cloudbreak.blueprint.template.views.RdsView;
+import com.sequenceiq.cloudbreak.blueprint.template.views.SharedServiceConfigsView;
+import com.sequenceiq.cloudbreak.blueprint.templates.GeneralClusterConfigs;
 import com.sequenceiq.cloudbreak.domain.Gateway;
 import com.sequenceiq.cloudbreak.domain.LdapConfig;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
@@ -31,47 +35,18 @@ public class BlueprintTemplateModelContextBuilder {
 
     private Optional<GatewayView> gateway = Optional.empty();
 
-    private Optional<HdfConfigs> hdfConfigs = Optional.empty();
+    private Optional<HdfConfigView> hdfConfigs = Optional.empty();
 
-    private Optional<SharedServiceConfigs> sharedServiceConfigs = Optional.empty();
+    private Optional<SharedServiceConfigsView> sharedServiceConfigs = Optional.empty();
 
-    private String clusterName;
+    private GeneralClusterConfigsView generalClusterConfigsView;
 
-    private String clusterAdminPassword;
-
-    private String clusterAdminFirstname;
-
-    private String clusterAdminLastname;
-
-    private String adminEmail;
-
-    private boolean containerExecutorType;
-
-    private String stackType;
-
-    private String stackVersion;
-
-    private Integer llapNodeCount;
+    private BlueprintView blueprintView;
 
     private Set<String> components = new HashSet<>();
 
-    public BlueprintTemplateModelContextBuilder withClusterAdminPassword(String clusterAdminPassword) {
-        this.clusterAdminPassword = clusterAdminPassword;
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withClusterAdminFirstname(String clusterAdminFirstname) {
-        this.clusterAdminFirstname = clusterAdminFirstname;
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withClusterAdminLastname(String clusterAdminLastname) {
-        this.clusterAdminLastname = clusterAdminLastname;
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withAdminEmail(String adminEmail) {
-        this.adminEmail = adminEmail;
+    public BlueprintTemplateModelContextBuilder withGeneralClusterConfigs(GeneralClusterConfigs generalClusterConfigs) {
+        this.generalClusterConfigsView = new GeneralClusterConfigsView(generalClusterConfigs);
         return this;
     }
 
@@ -96,32 +71,27 @@ public class BlueprintTemplateModelContextBuilder {
     }
 
     public BlueprintTemplateModelContextBuilder withLdap(LdapConfig ldapConfig) {
-        ldap = Optional.ofNullable(ldapConfig == null ? null : new LdapView(ldapConfig));
+        this.ldap = Optional.ofNullable(ldapConfig == null ? null : new LdapView(ldapConfig));
         return this;
     }
 
     public BlueprintTemplateModelContextBuilder withGateway(Gateway gatewayConfig) {
-        gateway = Optional.ofNullable(gateway == null ? null : new GatewayView(gatewayConfig));
+        this.gateway = Optional.ofNullable(gatewayConfig == null ? null : new GatewayView(gatewayConfig));
+        return this;
+    }
+
+    public BlueprintTemplateModelContextBuilder withBlueprintView(BlueprintView blueprintView) {
+        this.blueprintView = blueprintView;
         return this;
     }
 
     public BlueprintTemplateModelContextBuilder withGateway(GatewayView gatewayConfig) {
-        gateway = Optional.ofNullable(gatewayConfig);
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withClusterName(String clusterName) {
-        this.clusterName = clusterName;
+        this.gateway = Optional.ofNullable(gatewayConfig);
         return this;
     }
 
     public BlueprintTemplateModelContextBuilder withCustomProperty(String key, String value) {
-        customProperties.put(key, value);
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withLlapNodeCounts(Integer llapNodeCount) {
-        this.llapNodeCount = llapNodeCount;
+        this.customProperties.put(key, value);
         return this;
     }
 
@@ -132,28 +102,17 @@ public class BlueprintTemplateModelContextBuilder {
         return this;
     }
 
-    public BlueprintTemplateModelContextBuilder withContainerExecutor(boolean containerExecutorType) {
-        this.containerExecutorType = containerExecutorType;
+    public BlueprintTemplateModelContextBuilder withHdfConfigs(HdfConfigs hdfConfigs) {
+        if (hdfConfigs == null) {
+            this.hdfConfigs = Optional.empty();
+        } else {
+            this.hdfConfigs = Optional.of(new HdfConfigView(hdfConfigs));
+        }
         return this;
     }
 
-    public BlueprintTemplateModelContextBuilder withStackType(String stackType) {
-        this.stackType = stackType.toUpperCase();
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withStackVersion(String stackVersion) {
-        this.stackVersion = stackVersion;
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withHdfConfigs(Optional<HdfConfigs> hdfConfigs) {
-        this.hdfConfigs = hdfConfigs;
-        return this;
-    }
-
-    public BlueprintTemplateModelContextBuilder withSharedServiceConfigs(Optional<SharedServiceConfigs> sharedServiceConfigs) {
-        this.sharedServiceConfigs = sharedServiceConfigs;
+    public BlueprintTemplateModelContextBuilder withSharedServiceConfigs(SharedServiceConfigsView sharedServiceConfigsView) {
+        this.sharedServiceConfigs = Optional.ofNullable(sharedServiceConfigsView);
         return this;
     }
 
@@ -173,18 +132,9 @@ public class BlueprintTemplateModelContextBuilder {
         for (Entry<String, String> customEntry : customProperties.entrySet()) {
             blueprintTemplateModelContext.put(customEntry.getKey(), customEntry.getValue());
         }
-        blueprintTemplateModelContext.put("cluster_name", clusterName);
-        blueprintTemplateModelContext.put("cluster_admin_password", clusterAdminPassword);
-        blueprintTemplateModelContext.put("cluster_admin_firstname", clusterAdminFirstname);
-        blueprintTemplateModelContext.put("cluster_admin_lastname", clusterAdminLastname);
-        blueprintTemplateModelContext.put("admin_email", adminEmail);
-        blueprintTemplateModelContext.put("llap_node_count", llapNodeCount);
-        blueprintTemplateModelContext.put("container_executor", containerExecutorType);
-        blueprintTemplateModelContext.put("stack_type", stackType);
-        blueprintTemplateModelContext.put("stack_type_version", stackVersion);
-        blueprintTemplateModelContext.put("nifi_targets", hdfConfigs.isPresent() ? hdfConfigs.get().getNodeEntities() : null);
-        blueprintTemplateModelContext.put("nifi_registry_targets", hdfConfigs.isPresent() ? hdfConfigs.get().getRegistryNodeEntities() : null);
-        blueprintTemplateModelContext.put("nifi_proxy_hosts", hdfConfigs.isPresent() ? hdfConfigs.get().getProxyHosts().orElse(null) : null);
+        blueprintTemplateModelContext.put("blueprint", blueprintView);
+        blueprintTemplateModelContext.put("hdf", hdfConfigs.orElse(null));
+        blueprintTemplateModelContext.put("general", generalClusterConfigsView);
         blueprintTemplateModelContext.put("stack_version", "{{stack_version}}");
         return blueprintTemplateModelContext;
     }

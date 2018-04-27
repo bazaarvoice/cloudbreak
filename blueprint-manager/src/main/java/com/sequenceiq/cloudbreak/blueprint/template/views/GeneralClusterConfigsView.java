@@ -1,13 +1,12 @@
-package com.sequenceiq.cloudbreak.blueprint.templates;
-
-import java.util.Optional;
+package com.sequenceiq.cloudbreak.blueprint.template.views;
 
 import com.sequenceiq.cloudbreak.api.model.ExecutorType;
+import com.sequenceiq.cloudbreak.blueprint.templates.GeneralClusterConfigs;
 import com.sequenceiq.cloudbreak.common.model.OrchestratorType;
 
-public class GeneralClusterConfigs {
+public class GeneralClusterConfigsView {
 
-    private String identityUserEmail;
+    private String email;
 
     private boolean gatewayInstanceMetadataPresented;
 
@@ -27,13 +26,32 @@ public class GeneralClusterConfigs {
 
     private String ambariIp;
 
-    private OrchestratorType orchestratorType = OrchestratorType.HOST;
+    private OrchestratorType orchestratorType;
 
-    private int nodeCount;
+    private boolean containerExecutor;
 
-    private Optional<String> primaryGatewayInstanceDiscoveryFQDN = Optional.empty();
+    private Integer nodeCount;
 
-    public GeneralClusterConfigs() {
+    private String primaryGatewayInstanceDiscoveryFQDN;
+
+    private int llapNodeCount;
+
+    public GeneralClusterConfigsView(GeneralClusterConfigs generalClusterConfigs) {
+        this.email = generalClusterConfigs.getIdentityUserEmail();
+        this.gatewayInstanceMetadataPresented = generalClusterConfigs.isGatewayInstanceMetadataPresented();
+        this.instanceGroupsPresented = generalClusterConfigs.getInstanceGroupsPresented();
+        this.clusterName = generalClusterConfigs.getClusterName();
+        this.stackName = generalClusterConfigs.getStackName();
+        this.uuid = generalClusterConfigs.getUuid();
+        this.userName = generalClusterConfigs.getUserName();
+        this.password = generalClusterConfigs.getPassword();
+        this.executorType = generalClusterConfigs.getExecutorType();
+        this.ambariIp = generalClusterConfigs.getAmbariIp();
+        this.orchestratorType = generalClusterConfigs.getOrchestratorType();
+        this.nodeCount = generalClusterConfigs.getNodeCount();
+        this.containerExecutor = OrchestratorType.CONTAINER.equals(generalClusterConfigs.getOrchestratorType());
+        this.primaryGatewayInstanceDiscoveryFQDN = generalClusterConfigs.getPrimaryGatewayInstanceDiscoveryFQDN().orElse(null);
+        this.llapNodeCount = generalClusterConfigs.getNodeCount() - 1;
     }
 
     public OrchestratorType getOrchestratorType() {
@@ -80,7 +98,7 @@ public class GeneralClusterConfigs {
         this.ambariIp = ambariIp;
     }
 
-    public void setPrimaryGatewayInstanceDiscoveryFQDN(Optional<String> primaryGatewayInstanceDiscoveryFQDN) {
+    public void setPrimaryGatewayInstanceDiscoveryFQDN(String primaryGatewayInstanceDiscoveryFQDN) {
         this.primaryGatewayInstanceDiscoveryFQDN = primaryGatewayInstanceDiscoveryFQDN;
     }
 
@@ -120,23 +138,43 @@ public class GeneralClusterConfigs {
         return ambariIp;
     }
 
-    public Optional<String> getPrimaryGatewayInstanceDiscoveryFQDN() {
+    public String getPrimaryGatewayInstanceDiscoveryFQDN() {
         return primaryGatewayInstanceDiscoveryFQDN;
     }
 
-    public int getNodeCount() {
+    public Integer getNodeCount() {
         return nodeCount;
     }
 
-    public void setNodeCount(int nodeCount) {
+    public void setNodeCount(Integer nodeCount) {
         this.nodeCount = nodeCount;
     }
 
-    public String getIdentityUserEmail() {
-        return identityUserEmail;
+    public boolean isInstanceGroupsPresented() {
+        return instanceGroupsPresented;
     }
 
-    public void setIdentityUserEmail(String identityUserEmail) {
-        this.identityUserEmail = identityUserEmail;
+    public int getLlapNodeCount() {
+        return llapNodeCount;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setLlapNodeCount(int llapNodeCount) {
+        this.llapNodeCount = llapNodeCount;
+    }
+
+    public boolean getContainerExecutor() {
+        return containerExecutor;
+    }
+
+    public void setContainerExecutor(boolean containerExecutor) {
+        this.containerExecutor = containerExecutor;
     }
 }
