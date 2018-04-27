@@ -18,15 +18,20 @@ import com.sequenceiq.cloudbreak.controller.BadRequestException;
 import com.sequenceiq.cloudbreak.domain.Template;
 import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.service.MissingResourceNameGenerator;
+import com.sequenceiq.cloudbreak.service.stack.DefaultRootVolumeSizeProvider;
 import com.sequenceiq.cloudbreak.service.topology.TopologyService;
 
 @Component
 public class TemplateRequestToTemplateConverter extends AbstractConversionServiceAwareConverter<TemplateRequest, Template> {
+
     @Inject
     private TopologyService topologyService;
 
     @Inject
     private MissingResourceNameGenerator missingResourceNameGenerator;
+
+    @Inject
+    private DefaultRootVolumeSizeProvider defaultRootVolumeSizeProvider;
 
     @Override
     public Template convert(TemplateRequest source) {
@@ -38,8 +43,9 @@ public class TemplateRequestToTemplateConverter extends AbstractConversionServic
         }
         template.setDescription(source.getDescription());
         template.setStatus(ResourceStatus.USER_MANAGED);
-        convertVolume(source, template);
+        template = convertVolume(source, template);
         template.setCloudPlatform(source.getCloudPlatform());
+        template.setRootVolumeSize(source.getRootVolumeSize());
         template.setInstanceType(source.getInstanceType() == null ? "" : source.getInstanceType());
         Map<String, Object> parameters = source.getParameters() == null ? Maps.newHashMap() : source.getParameters();
         CustomInstanceType customInstanceType = source.getCustomInstanceType();
@@ -60,12 +66,13 @@ public class TemplateRequestToTemplateConverter extends AbstractConversionServic
         return template;
     }
 
-    private void convertVolume(TemplateRequest source, Template template) {
+    private Template convertVolume(TemplateRequest source, Template template) {
         String volumeType = source.getVolumeType();
         template.setVolumeType(volumeType == null ? "HDD" : volumeType);
         Integer volumeCount = source.getVolumeCount();
         template.setVolumeCount(volumeCount == null ? Integer.valueOf(0) : volumeCount);
         Integer volumeSize = source.getVolumeSize();
         template.setVolumeSize(volumeSize == null ? Integer.valueOf(0) : volumeSize);
+        return template;
     }
 }

@@ -49,6 +49,7 @@ import com.sequenceiq.cloudbreak.domain.json.Json;
 import com.sequenceiq.cloudbreak.service.CloudbreakException;
 import com.sequenceiq.cloudbreak.service.account.AccountPreferencesService;
 import com.sequenceiq.cloudbreak.service.stack.CloudParameterService;
+import com.sequenceiq.cloudbreak.service.stack.DefaultRootVolumeSizeProvider;
 import com.sequenceiq.cloudbreak.service.stack.StackService;
 
 @Component
@@ -74,6 +75,9 @@ public class StackRequestToStackConverter extends AbstractConversionServiceAware
 
     @Inject
     private DefaultCostTaggingService defaultCostTaggingService;
+
+    @Inject
+    private DefaultRootVolumeSizeProvider defaultRootVolumeSizeProvider;
 
     @Value("${cb.platform.default.regions:}")
     private String defaultRegions;
@@ -112,7 +116,6 @@ public class StackRequestToStackConverter extends AbstractConversionServiceAware
         stack.setCustomHostname(source.getCustomHostname());
         stack.setClusterNameAsSubdomain(source.isClusterNameAsSubdomain());
         stack.setHostgroupNameAsHostname(source.isHostgroupNameAsHostname());
-
         stack.setUuid(UUID.randomUUID().toString());
         return stack;
     }
