@@ -1,9 +1,11 @@
 package com.sequenceiq.cloudbreak.blueprint.template;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import com.sequenceiq.cloudbreak.api.model.FileSystemType;
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
@@ -50,6 +52,8 @@ public class BlueprintTemplateModelContextBuilder {
     private String stackVersion;
 
     private Integer llapNodeCount;
+
+    private Set<String> components = new HashSet<>();
 
     public BlueprintTemplateModelContextBuilder withClusterAdminPassword(String clusterAdminPassword) {
         this.clusterAdminPassword = clusterAdminPassword;
@@ -153,8 +157,14 @@ public class BlueprintTemplateModelContextBuilder {
         return this;
     }
 
+    public BlueprintTemplateModelContextBuilder withComponents(Set<String> components) {
+        this.components = components;
+        return this;
+    }
+
     public Map<String, Object> build() {
         Map<String, Object> blueprintTemplateModelContext = new HashMap<>();
+        blueprintTemplateModelContext.put("components", components);
         blueprintTemplateModelContext.put("ldap", ldap.orElse(null));
         blueprintTemplateModelContext.put("gateway", gateway.orElse(null));
         blueprintTemplateModelContext.put("rds", rds);

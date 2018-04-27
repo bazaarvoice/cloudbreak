@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.assertj.core.util.Maps;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,10 +22,11 @@ import com.sequenceiq.cloudbreak.TestUtil;
 import com.sequenceiq.cloudbreak.api.model.DatabaseVendor;
 import com.sequenceiq.cloudbreak.api.model.rds.RdsType;
 import com.sequenceiq.cloudbreak.blueprint.nifi.HdfConfigs;
+import com.sequenceiq.cloudbreak.blueprint.sharedservice.SharedServiceConfigs;
 import com.sequenceiq.cloudbreak.domain.RDSConfig;
 
 @RunWith(Parameterized.class)
-public class ConfigTemplateTest {
+public class HandlebarTemplateTest {
 
     private Handlebars handlebars = HandlebarUtils.handlebars();
 
@@ -34,7 +36,7 @@ public class ConfigTemplateTest {
 
     private Map<String, Object> model;
 
-    public ConfigTemplateTest(String input, String output, Map<String, Object> model) {
+    public HandlebarTemplateTest(String input, String output, Map<String, Object> model) {
         this.input = input;
         this.output = output;
         this.model = model;
@@ -42,73 +44,81 @@ public class ConfigTemplateTest {
 
     @Parameterized.Parameters(name = "{index}: templateTest {0} with handlebar where the expected file is  {1}")
     public static Iterable<Object[]> data() throws JsonProcessingException {
-        return Arrays.asList(new Object[][] {
-                { "blueprints/configurations/atlas/ldap.handlebars", "configurations/atlas/atlas-with-ldap.json",
-                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig() },
-                { "blueprints/configurations/atlas/ldap.handlebars", "configurations/atlas/atlas-without-ldap.json",
-                        withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig() },
+        return Arrays.asList(new Object[][]{
+                {"blueprints/configurations/atlas/ldap.handlebars", "configurations/atlas/atlas-with-ldap.json",
+                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig()},
+                {"blueprints/configurations/atlas/ldap.handlebars", "configurations/atlas/atlas-without-ldap.json",
+                        withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig()},
                 {"blueprints/configurations/druid_superset/rds.handlebars", "configurations/druid_superset/druid-with-rds.json",
-                        druidSupersetRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() },
+                        druidSupersetRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig()},
                 {"blueprints/configurations/druid_superset/rds.handlebars", "configurations/druid_superset/druid-without-rds.json",
-                        druidSupersetWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig() },
-                { "blueprints/configurations/superset/rds.handlebars", "configurations/superset/superset-with-rds.json",
-                        supersetRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() },
-                { "blueprints/configurations/superset/rds.handlebars", "configurations/superset/superset-without-rds.json",
-                        supersetWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig() },
-                { "blueprints/configurations/hadoop/ldap.handlebars", "configurations/hadoop/hadoop-with-ldap.json",
-                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig() },
-                { "blueprints/configurations/hadoop/ldap.handlebars", "configurations/hadoop/hadoop-without-ldap.json",
-                        withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig() },
-                { "blueprints/configurations/hadoop/global.handlebars", "configurations/hadoop/global.json",
-                        objectWithoutEverything() },
-                { "blueprints/configurations/hive/rds.handlebars", "configurations/hive/hive-with-rds.json",
-                        hiveRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() },
-                { "blueprints/configurations/hive/rds.handlebars", "configurations/hive/hive-without-rds.json",
-                        objectWithoutEverything() },
-                { "blueprints/configurations/llap/global.handlebars", "configurations/llap/global.json",
-                        llapObjectWhenNodeCountPresented() },
-                { "blueprints/configurations/nifi/global.handlebars", "configurations/nifi/global-with-hdf-nifitargets.json",
-                        nifiConfigWhenHdfPresentedThenShouldReturnWithNifiConfig(false) },
-                { "blueprints/configurations/nifi/global.handlebars", "configurations/nifi/global-with-hdf-full.json",
-                        nifiConfigWhenHdfPresentedThenShouldReturnWithNifiConfig(true) },
-                { "blueprints/configurations/nifi/global.handlebars", "configurations/nifi/global-without-hdf.json",
-                        nifiConfigWhenHdfNotPresentedThenShouldReturnWithNotNifiConfig() },
-                { "blueprints/configurations/ranger/global.handlebars", "configurations/ranger/global.json",
-                        objectWithoutEverything() },
-                { "blueprints/configurations/ranger/ldap.handlebars", "configurations/ranger/ranger-with-ldap.json",
-                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig() },
-                { "blueprints/configurations/ranger_usersync/ldap.handlebars", "configurations/ranger/ranger-usersync-with-ldap.json",
-                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig() },
-                { "blueprints/configurations/ranger/ldap.handlebars", "configurations/ranger/ranger-without-ldap.json",
-                        withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig() },
-                { "blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-with-rds.json",
-                        rangerRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() },
-                { "blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-with-oracle-rds.json",
-                        rangerRdsConfigWhenOracleRdsPresentedThenShouldReturnWithRdsConfig() },
-                { "blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-without-rds.json",
-                        objectWithoutEverything() },
-                { "blueprints/configurations/yarn/global.handlebars", "configurations/yarn/global-without-container.json",
-                        objectContainerExecutorIsFalseThenShouldReturnWithoutContainerConfigs() },
-                { "blueprints/configurations/yarn/global.handlebars", "configurations/yarn/global-with-container.json",
-                        objectContainerExecutorIsTrueThenShouldReturnWithContainerConfigs() },
-                { "blueprints/configurations/zeppelin/global.handlebars", "configurations/zeppelin/global-with-2_5.json",
-                        zeppelinWhenStackVersionIs25ThenShouldReturnWithZeppelinEnvConfigs() },
-                { "blueprints/configurations/zeppelin/global.handlebars", "configurations/zeppelin/global-without-2_5.json",
-                        zeppelinWhenStackVersionIsNot25ThenShouldReturnWithZeppelinShiroIniConfigs() },
-                { "blueprints/configurations/hive/ldap.handlebars", "configurations/hive/hive-with-ldap.json",
-                        hiveWhenLdapPresentedThenShouldReturnWithLdapConfigs() },
-                { "blueprints/configurations/hive/ldap.handlebars", "configurations/hive/hive-without-ldap.json",
-                        hiveWhenLdapNotPresentedThenShouldReturnWithoutLdapConfigs() },
-                { "blueprints/configurations/oozie/rds.handlebars", "configurations/oozie/oozie-with-rds.json",
-                        oozieWhenRdsPresentedThenShouldReturnWithRdsConfigs() },
-                { "blueprints/configurations/oozie/rds.handlebars", "configurations/oozie/oozie-without-rds.json",
-                        objectWithoutEverything() },
-                { "blueprints/configurations/webhcat/global.handlebars", "configurations/webhcat/webhcat.json",
-                        objectWithoutEverything() },
-                { "blueprints/configurations/druid/rds.handlebars", "configurations/druid/druid-without-rds.json",
-                        druidWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig() },
-                { "blueprints/configurations/druid/rds.handlebars", "configurations/druid/druid-with-rds.json",
-                        druidRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() },
+                        druidSupersetWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig()},
+                {"blueprints/configurations/superset/rds.handlebars", "configurations/superset/superset-with-rds.json",
+                        supersetRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig()},
+                {"blueprints/configurations/superset/rds.handlebars", "configurations/superset/superset-without-rds.json",
+                        supersetWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig()},
+                {"blueprints/configurations/hadoop/ldap.handlebars", "configurations/hadoop/hadoop-with-ldap.json",
+                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig()},
+                {"blueprints/configurations/hadoop/ldap.handlebars", "configurations/hadoop/hadoop-without-ldap.json",
+                        withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig()},
+                {"blueprints/configurations/hadoop/global.handlebars", "configurations/hadoop/global.json",
+                        objectWithoutEverything()},
+                {"blueprints/configurations/hive/rds.handlebars", "configurations/hive/hive-with-rds.json",
+                        hiveRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig()},
+                {"blueprints/configurations/hive/rds.handlebars", "configurations/hive/hive-without-rds.json",
+                        objectWithoutEverything()},
+                {"blueprints/configurations/llap/global.handlebars", "configurations/llap/global.json",
+                        llapObjectWhenNodeCountPresented()},
+                {"blueprints/configurations/nifi/global.handlebars", "configurations/nifi/global-with-hdf-nifitargets.json",
+                        nifiConfigWhenHdfPresentedThenShouldReturnWithNifiConfig(false)},
+                {"blueprints/configurations/nifi/global.handlebars", "configurations/nifi/global-with-hdf-full.json",
+                        nifiConfigWhenHdfPresentedThenShouldReturnWithNifiConfig(true)},
+                {"blueprints/configurations/nifi/global.handlebars", "configurations/nifi/global-without-hdf.json",
+                        nifiConfigWhenHdfNotPresentedThenShouldReturnWithNotNifiConfig()},
+                {"blueprints/configurations/ranger/global.handlebars", "configurations/ranger/global.json",
+                        objectWithoutEverything()},
+                {"blueprints/configurations/ranger/ldap.handlebars", "configurations/ranger/ranger-with-ldap.json",
+                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig()},
+                {"blueprints/configurations/ranger_usersync/ldap.handlebars", "configurations/ranger/ranger-usersync-with-ldap.json",
+                        ldapConfigWhenLdapPresentedThenShouldReturnWithLdapConfig()},
+                {"blueprints/configurations/ranger/ldap.handlebars", "configurations/ranger/ranger-without-ldap.json",
+                        withoutLdapConfigWhenLdapNotPresentedThenShouldReturnWithoutLdapConfig()},
+                {"blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-with-rds.json",
+                        rangerRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig()},
+                {"blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-with-oracle-rds.json",
+                        rangerRdsConfigWhenOracleRdsPresentedThenShouldReturnWithRdsConfig()},
+                {"blueprints/configurations/ranger/rds.handlebars", "configurations/ranger/ranger-without-rds.json",
+                        objectWithoutEverything()},
+                {"blueprints/configurations/yarn/global.handlebars", "configurations/yarn/global-without-container.json",
+                        objectContainerExecutorIsFalseThenShouldReturnWithoutContainerConfigs()},
+                {"blueprints/configurations/yarn/global.handlebars", "configurations/yarn/global-with-container.json",
+                        objectContainerExecutorIsTrueThenShouldReturnWithContainerConfigs()},
+                {"blueprints/configurations/zeppelin/global.handlebars", "configurations/zeppelin/global-with-2_5.json",
+                        zeppelinWhenStackVersionIs25ThenShouldReturnWithZeppelinEnvConfigs()},
+                {"blueprints/configurations/zeppelin/global.handlebars", "configurations/zeppelin/global-without-2_5.json",
+                        zeppelinWhenStackVersionIsNot25ThenShouldReturnWithZeppelinShiroIniConfigs()},
+                {"blueprints/configurations/hive/ldap.handlebars", "configurations/hive/hive-with-ldap.json",
+                        hiveWhenLdapPresentedThenShouldReturnWithLdapConfigs()},
+                {"blueprints/configurations/hive/ldap.handlebars", "configurations/hive/hive-without-ldap.json",
+                        hiveWhenLdapNotPresentedThenShouldReturnWithoutLdapConfigs()},
+                {"blueprints/configurations/oozie/rds.handlebars", "configurations/oozie/oozie-with-rds.json",
+                        oozieWhenRdsPresentedThenShouldReturnWithRdsConfigs()},
+                {"blueprints/configurations/oozie/rds.handlebars", "configurations/oozie/oozie-without-rds.json",
+                        objectWithoutEverything()},
+                {"blueprints/configurations/webhcat/global.handlebars", "configurations/webhcat/webhcat.json",
+                        objectWithoutEverything()},
+                {"blueprints/configurations/druid/rds.handlebars", "configurations/druid/druid-without-rds.json",
+                        druidWithoutRdsConfigWhenRdsNotPresentedThenShouldReturnWithoutRdsConfig()},
+                {"blueprints/configurations/druid/rds.handlebars", "configurations/druid/druid-with-rds.json",
+                        druidRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig()},
+                {"blueprints/configurations/ranger/shared_service.handlebars", "configurations/ranger/shared-service-datalake.json",
+                        sSConfigWhenSSAndDatalakePresentedThenShouldReturnWithSSDatalakeConfig()},
+                {"blueprints/configurations/ranger/shared_service.handlebars", "configurations/ranger/shared-service-no-datalake.json",
+                        sSConfigWhenNoSSAndDatalakePresentedThenShouldReturnWithoutSSDatalakeConfig()},
+                {"blueprints/configurations/hive/shared_service.handlebars", "configurations/hive/shared-service-datalake.json",
+                        sSConfigWhenSSAndDatalakePresentedThenShouldReturnWithSSDatalakeConfig()},
+                {"blueprints/configurations/hive/shared_service.handlebars", "configurations/hive/shared-service-attached.json",
+                        sSConfigWhenNoSSAndDatalakePresentedThenShouldReturnWithoutSSDatalakeConfig()},
         });
     }
 
@@ -123,6 +133,7 @@ public class ConfigTemplateTest {
 
     public static Map<String, Object> objectWithoutEverything() {
         return new BlueprintTemplateModelContextBuilder()
+                .withClusterAdminPassword("cloudbreak123!")
                 .build();
     }
 
@@ -276,14 +287,21 @@ public class ConfigTemplateTest {
 
     public static Map<String, Object> rangerRdsConfigWhenRdsPresentedThenShouldReturnWithRdsConfig() throws JsonProcessingException {
         RDSConfig rdsConfig = TestUtil.rdsConfig(RdsType.RANGER);
-
-        // TODO we should somehow handle this
-        //Map<String, String> attributes = new HashMap<>();
-        //attributes.put("rangerAdminPassword", "rangerAdminPassword");
-        //rdsConfig.setAttributes(new Json(attributes));
-
         return new BlueprintTemplateModelContextBuilder()
                 .withRdsConfigs(Sets.newHashSet(rdsConfig))
+                .build();
+    }
+
+    public static Map<String, Object> sSConfigWhenSSAndDatalakePresentedThenShouldReturnWithSSDatalakeConfig() throws JsonProcessingException {
+        return new BlueprintTemplateModelContextBuilder()
+                .withSharedServiceConfigs(datalakeSharedServiceConfig())
+                .build();
+    }
+
+    public static Map<String, Object> sSConfigWhenNoSSAndDatalakePresentedThenShouldReturnWithoutSSDatalakeConfig() throws JsonProcessingException {
+        return new BlueprintTemplateModelContextBuilder()
+                .withSharedServiceConfigs(attachedClusterSharedServiceConfig())
+                .withCustomProperties(Maps.newHashMap("REMOTE_CLUSTER_NAME", "datalake-1"))
                 .build();
     }
 
@@ -319,4 +337,16 @@ public class ConfigTemplateTest {
         return readFileFromClasspath(String.format("%s", file));
     }
 
+    private static Optional<SharedServiceConfigs> datalakeSharedServiceConfig() {
+        SharedServiceConfigs sharedServiceConfigs = new SharedServiceConfigs();
+        sharedServiceConfigs.setDatalakeCluster(true);
+        return Optional.of(sharedServiceConfigs);
+    }
+
+    private static Optional<SharedServiceConfigs> attachedClusterSharedServiceConfig() {
+        SharedServiceConfigs sharedServiceConfigs = new SharedServiceConfigs();
+        sharedServiceConfigs.setAttachedCluster(true);
+        sharedServiceConfigs.setRangerAdminPassword("cloudbreak123!");
+        return Optional.of(sharedServiceConfigs);
+    }
 }

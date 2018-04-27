@@ -16,6 +16,7 @@ public final class HandlebarUtils {
         handlebars.registerHelper(EqHelper.NAME, EqHelper.INSTANCE);
         handlebars.registerHelper(NeqHelper.NAME, NeqHelper.INSTANCE);
         handlebars.registerHelper(GatewayDisabledHelper.NAME, GatewayDisabledHelper.INSTANCE);
+        handlebars.registerHelper(ComponentPresentedHelper.NAME, ComponentPresentedHelper.INSTANCE);
         handlebars.registerHelperMissing((context, options) -> options.fn.text());
         return handlebars;
     }
