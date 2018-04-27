@@ -69,9 +69,6 @@
     {
       "components": [
         {
-          "name": "HST_SERVER"
-        },
-        {
           "name": "HST_AGENT"
         }
       ],
@@ -81,6 +78,9 @@
     },
     {
       "components": [
+        {
+          "name": "HST_SERVER"
+        },
         {
           "name": "HST_AGENT"
         }
