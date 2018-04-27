@@ -5,17 +5,17 @@ import java.io.IOException;
 import com.github.jknack.handlebars.Helper;
 import com.github.jknack.handlebars.Options;
 
-public class IfTrueHelper implements Helper<Boolean> {
+public class IfFalseHelper implements Helper<Boolean> {
 
     /**
      * A singleton instance of this helper.
      */
-    public static final Helper<Boolean> INSTANCE = new IfTrueHelper();
+    public static final Helper<Boolean> INSTANCE = new IfFalseHelper();
 
     /**
      * The helper's name.
      */
-    public static final String NAME = "if-true";
+    public static final String NAME = "if-false";
 
     @Override
     public Object apply(Boolean context, final Options options)
@@ -25,7 +25,7 @@ public class IfTrueHelper implements Helper<Boolean> {
         }
 
         Options.Buffer buffer = options.buffer();
-        if (!context) {
+        if (context) {
             buffer.append(options.inverse());
         } else {
             buffer.append(options.fn());
