@@ -1,4 +1,8 @@
 apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish-auth'
+apply plugin: "net.linguica.maven-settings"
 
 repositories {
     maven { url 'http://repo.spring.io/libs-release' }
@@ -8,6 +12,23 @@ repositories {
 jar {
     baseName = 'cloud-api'
     archiveName = 'cloud-api.jar'
+}
+group = 'com.bazaarvoice.cloudbreak'
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = jar.baseName
+            version = rootProject.jarVersion
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            name "bazaarvoice"
+            url rootProject.version.endsWith('SNAPSHOT') ? "https://repo.bazaarvoice.com/nexus/content/repositories/snapshots" :
+                    "https://repo.bazaarvoice.com/nexus/content/repositories/releases"
+        }
+    }
 }
 
 dependencies {
