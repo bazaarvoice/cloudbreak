@@ -8,6 +8,7 @@ buildscript {
     classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.1.11'
     classpath 'org.ajoberstar.reckon:reckon-gradle:0.4.0'
     classpath 'com.smokejumperit.gradle.license:Gradle-License-Report:0.0.2'
+    classpath 'net.linguica.gradle:maven-settings-plugin:0.5'
   }
 }
 
