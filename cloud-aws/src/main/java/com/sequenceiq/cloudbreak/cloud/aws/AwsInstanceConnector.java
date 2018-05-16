@@ -37,6 +37,8 @@ public class AwsInstanceConnector implements InstanceConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AwsInstanceConnector.class);
 
+    private static final String INSTANCE_NOT_FOUND_ERROR_CODE = "InvalidInstanceID.NotFound";
+
     @Inject
     private AwsClient awsClient;
 
@@ -165,7 +167,12 @@ public class AwsInstanceConnector implements InstanceConnector {
                     }
                 }
             } catch (AmazonEC2Exception e) {
-                LOGGER.warn("Instance does not exist with this id: {}, original message: {}", vm.getInstanceId(), e.getMessage());
+                if (e.getErrorCode().equalsIgnoreCase(INSTANCE_NOT_FOUND_ERROR_CODE)) {
+                    LOGGER.info("Instance does not exist with this id: {}, mark as terminated.", vm.getInstanceId());
+                    cloudVmInstanceStatuses.add(new CloudVmInstanceStatus(vm, InstanceStatus.TERMINATED));
+                } else {
+                    LOGGER.warn("Instance could not be described with this id: {}, original message: {}", vm.getInstanceId(), e.getMessage());
+                }
             }
         }
         return cloudVmInstanceStatuses;
