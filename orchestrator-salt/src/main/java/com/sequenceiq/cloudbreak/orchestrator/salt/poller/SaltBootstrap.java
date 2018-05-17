@@ -52,7 +52,9 @@ public class SaltBootstrap implements OrchestratorBootstrap {
             LOGGER.info("Missing targets for SaltBootstrap: {}", targets);
 
             SaltAction saltAction = createBootstrap();
+            LOGGER.info("SaltBootStrap call Before Action {}", saltAction.toString());
             GenericResponses responses = sc.action(saltAction);
+            LOGGER.info("SaltBootStrap call after Action");
 
             Set<Node> failedTargets = new HashSet<>();
 

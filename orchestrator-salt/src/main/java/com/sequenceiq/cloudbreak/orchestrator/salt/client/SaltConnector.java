@@ -113,6 +113,7 @@ public class SaltConnector implements Closeable {
     }
 
     public GenericResponses action(SaltAction saltAction) {
+        LOGGER.info("SaltConnector action Before Response {}", saltAction.toString());
         Response response = saltTarget.path(SaltEndpoint.BOOT_ACTION_DISTRIBUTE.getContextPath()).request()
                 .header(SIGN_HEADER, PkiUtil.generateSignature(signatureKey, toJson(saltAction).getBytes()))
                 .post(Entity.json(saltAction));
@@ -126,14 +127,22 @@ public class SaltConnector implements Closeable {
     }
 
     public <T> T run(Target<String> target, String fun, SaltClientType clientType, Class<T> clazz, String... arg) {
+        if (target != null) {
+            LOGGER.info("SaltConnector run Begin Target {}, Type {}, clientType {}, fun {}, args {}", target.getTarget(), target.getType(),
+                    clientType.getType(), fun, Arrays.toString(arg));
+        } else {
+            LOGGER.info("SaltConnector run Begin Target is null");
+        }
         Form form = new Form();
         form = addAuth(form)
                 .param("fun", fun)
                 .param("client", clientType.getType());
+        LOGGER.info("SaltConnector run After Add Auth {}", form.toString());
         if (target != null) {
             form = form.param("tgt", target.getTarget())
                     .param("expr_form", target.getType());
         }
+        LOGGER.info("SaltConnector run After Target", form.toString());
         if (arg != null) {
             if (clientType.equals(SaltClientType.LOCAL) || clientType.equals(SaltClientType.LOCAL_ASYNC)) {
                 for (String a : arg) {
@@ -145,11 +154,19 @@ public class SaltConnector implements Closeable {
                 }
             }
         }
+        LOGGER.info("SaltConnector run Before Response");
         Response response = saltTarget.path(SaltEndpoint.SALT_RUN.getContextPath()).request()
                 .header(SIGN_HEADER, PkiUtil.generateSignature(signatureKey, toJson(form.asMap()).getBytes()))
                 .post(Entity.form(form));
         T responseEntity = JaxRSUtil.response(response, clazz);
+        LOGGER.info("SaltConnector run After Response{}", response.toString());
         LOGGER.info("Salt run has been executed. fun: {}", fun);
+        if (target != null) {
+            LOGGER.info("SaltConnector run End Target {}, Type {}, clientType {}, fun {}, args {}", target.getTarget(), target.getType(),
+                    clientType.getType(), fun, Arrays.toString(arg));
+        } else {
+            LOGGER.info("SaltConnector run End Target is null");
+        }
         return responseEntity;
     }
 

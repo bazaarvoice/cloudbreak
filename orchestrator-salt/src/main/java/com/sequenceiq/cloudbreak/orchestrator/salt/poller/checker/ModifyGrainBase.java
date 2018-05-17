@@ -9,8 +9,12 @@ import com.sequenceiq.cloudbreak.orchestrator.salt.client.target.Compound.Compou
 import com.sequenceiq.cloudbreak.orchestrator.salt.domain.ApplyResponse;
 import com.sequenceiq.cloudbreak.orchestrator.salt.poller.BaseSaltJobRunner;
 import com.sequenceiq.cloudbreak.orchestrator.salt.states.SaltStates;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ModifyGrainBase extends BaseSaltJobRunner {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModifyGrainBase.class);
 
     private final String key;
 
@@ -30,12 +34,14 @@ public abstract class ModifyGrainBase extends BaseSaltJobRunner {
 
     @Override
     public String submit(SaltConnector saltConnector) {
+        LOGGER.info("ModifyGrainBase submit Begin {}", toString());
         ApplyResponse response;
         if (addGrain) {
             response = SaltStates.addGrain(saltConnector, new Compound(getTarget(), compoundType), key, value);
         } else {
             response = SaltStates.removeGrain(saltConnector, new Compound(getTarget(), compoundType), key, value);
         }
+        LOGGER.info("ModifyGrainBase submit After Response {}", response.toString());
         Set<String> missingIps = collectMissingNodes(collectNodes(response));
         setTarget(missingIps);
         return missingIps.toString();
