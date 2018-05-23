@@ -19,18 +19,22 @@ public class StackScalingFlowContext extends StackContext {
 
     private final Set<String> hostNames;
 
+    private Boolean forceHealthyInstanceDeletion;
+
     public StackScalingFlowContext(String flowId, Stack stack, CloudContext cloudContext, CloudCredential cloudCredential, CloudStack cloudStack,
-            String instanceGroupName, Set<String> instanceIds, Integer adjustment) {
-        this(flowId, stack, cloudContext, cloudCredential, cloudStack, instanceGroupName, instanceIds, adjustment, Collections.emptySet());
+            String instanceGroupName, Boolean forceHealthyInstanceDeletion, Set<String> instanceIds, Integer adjustment) {
+        this(flowId, stack, cloudContext, cloudCredential, cloudStack, instanceGroupName, forceHealthyInstanceDeletion,
+            instanceIds, adjustment, Collections.emptySet());
     }
 
     public StackScalingFlowContext(String flowId, Stack stack, CloudContext cloudContext, CloudCredential cloudCredential, CloudStack cloudStack,
-            String instanceGroupName, Set<String> instanceIds, Integer adjustment, Set<String> hostNames) {
+            String instanceGroupName, Boolean forceHealthyInstanceDeletion, Set<String> instanceIds, Integer adjustment, Set<String> hostNames) {
         super(flowId, stack, cloudContext, cloudCredential, cloudStack);
         this.instanceGroupName = instanceGroupName;
         this.instanceIds = instanceIds;
         this.adjustment = adjustment;
         this.hostNames = hostNames;
+        this.forceHealthyInstanceDeletion = forceHealthyInstanceDeletion;
     }
 
     public Collection<String> getInstanceIds() {
@@ -47,5 +51,9 @@ public class StackScalingFlowContext extends StackContext {
 
     public Set<String> getHostNames() {
         return hostNames;
+    }
+
+    public Boolean getForceHealthyInstanceDeletion() {
+        return forceHealthyInstanceDeletion;
     }
 }

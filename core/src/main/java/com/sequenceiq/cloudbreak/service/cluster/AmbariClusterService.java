@@ -371,7 +371,7 @@ public class AmbariClusterService implements ClusterService {
         boolean downscaleRequest = validateRequest(stack, hostGroupAdjustment);
         if (downscaleRequest) {
             updateClusterStatusByStackId(stackId, UPDATE_REQUESTED);
-            flowManager.triggerClusterDownscale(stackId, hostGroupAdjustment);
+            flowManager.triggerClusterDownscale(stackId, Boolean.FALSE, hostGroupAdjustment);
         } else {
             flowManager.triggerClusterUpscale(stackId, hostGroupAdjustment);
         }

@@ -33,10 +33,10 @@ public class ClusterDownscaleActions {
         return new AbstractClusterAction<ClusterDownscaleTriggerEvent>(ClusterDownscaleTriggerEvent.class) {
             @Override
             protected void doExecute(ClusterViewContext context, ClusterDownscaleTriggerEvent payload, Map<Object, Object> variables) {
-                clusterDownscaleService.clusterDownscaleStarted(context.getStackId(), payload.getHostGroupName(), payload.getAdjustment(),
-                        payload.getPrivateIds());
-                CollectDownscaleCandidatesRequest request = new CollectDownscaleCandidatesRequest(context.getStackId(), payload.getHostGroupName(),
+                clusterDownscaleService.clusterDownscaleStarted(context.getStackId(), payload.getForceHealthyInstanceDeletion(), payload.getHostGroupName(),
                         payload.getAdjustment(), payload.getPrivateIds());
+                CollectDownscaleCandidatesRequest request = new CollectDownscaleCandidatesRequest(context.getStackId(),
+                        payload.getForceHealthyInstanceDeletion(), payload.getHostGroupName(), payload.getAdjustment(), payload.getPrivateIds());
                 sendEvent(context.getFlowId(), request.selector(), request);
             }
         };

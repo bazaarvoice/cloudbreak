@@ -12,13 +12,21 @@ import com.sequenceiq.cloudbreak.reactor.api.event.StackEvent;
 public class InstanceTerminationTriggerEvent extends StackEvent implements InstancePayload {
     private final Set<String> instanceIds;
 
-    public InstanceTerminationTriggerEvent(String selector, Long stackId, Set<String> instanceIds) {
+    private Boolean forceHealthyInstanceDeletion;
+
+    public InstanceTerminationTriggerEvent(String selector, Long stackId, Set<String> instanceIds, Boolean forceHealthyInstanceDeletion) {
         super(selector, stackId);
         this.instanceIds = instanceIds;
+        this.forceHealthyInstanceDeletion = forceHealthyInstanceDeletion;
     }
 
     @Override
     public Set<String> getInstanceIds() {
         return instanceIds;
+    }
+
+    @Override
+    public Boolean getForceHealthyInstanceDeletion() {
+        return forceHealthyInstanceDeletion;
     }
 }

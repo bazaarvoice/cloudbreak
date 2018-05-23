@@ -96,11 +96,11 @@ public class ReactorFlowManagerTest {
         underTest.triggerTermination(stackId, false, false);
         underTest.triggerTermination(stackId, false, true);
         underTest.triggerStackUpscale(stackId, instanceGroupAdjustment, true);
-        underTest.triggerStackDownscale(stackId, instanceGroupAdjustment);
-        underTest.triggerStackRemoveInstance(stackId, "hostgroup", 5L);
-        underTest.triggerStackRemoveInstances(stackId, "hostgroup", privateIds);
+        underTest.triggerStackDownscale(stackId, false, instanceGroupAdjustment);
+        underTest.triggerStackRemoveInstance(stackId, "hostgroup", 5L, false);
+        underTest.triggerStackRemoveInstances(stackId, "hostgroup", privateIds, false);
         underTest.triggerClusterUpscale(stackId, hostGroupAdjustment);
-        underTest.triggerClusterDownscale(stackId, hostGroupAdjustment);
+        underTest.triggerClusterDownscale(stackId, false, hostGroupAdjustment);
         underTest.triggerClusterSync(stackId);
         underTest.triggerStackSync(stackId);
         underTest.triggerFullSync(stackId);

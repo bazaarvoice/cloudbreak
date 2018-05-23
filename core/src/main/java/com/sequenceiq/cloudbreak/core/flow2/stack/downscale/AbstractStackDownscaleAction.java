@@ -72,7 +72,8 @@ public abstract class AbstractStackDownscaleAction<P extends Payload>
         Set<String> instanceIds = extractInstanceIds(payload, variables, stack);
         Integer adjustment = extractAdjustment(payload, variables);
         CloudStack cloudStack = cloudStackConverter.convertForDownscale(stack, instanceIds);
-        return new StackScalingFlowContext(flowId, stack, cloudContext, cloudCredential, cloudStack, instanceGroupName, instanceIds, adjustment);
+        return new StackScalingFlowContext(flowId, stack, cloudContext, cloudCredential, cloudStack, instanceGroupName,
+            getForceHealthyInstanceDeletion(payload), instanceIds, adjustment);
     }
 
     private Integer extractAdjustment(P payload, Map<Object, Object> variables) {
@@ -83,6 +84,15 @@ public abstract class AbstractStackDownscaleAction<P extends Payload>
             return adjustment;
         }
         return getAdjustment(variables);
+    }
+
+    private  Boolean getForceHealthyInstanceDeletion(P payload) {
+        if (payload instanceof StackDownscaleTriggerEvent) {
+            StackDownscaleTriggerEvent ssc = (StackDownscaleTriggerEvent) payload;
+            return ssc.getForceHealthyInstanceDeletion();
+        } else {
+            return false;
+        }
     }
 
     private Set<String> extractInstanceIds(P payload, Map<Object, Object> variables, Stack stack) {

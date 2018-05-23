@@ -43,11 +43,11 @@ public class DownscaleFlowEventChainFactory implements FlowEventChainFactory<Clu
         Queue<Selectable> flowEventChain = new ConcurrentLinkedQueue<>();
         ClusterScaleTriggerEvent cste;
         if (event.getPrivateIds() == null) {
-            cste = new ClusterDownscaleTriggerEvent(DECOMMISSION_EVENT.event(), event.getStackId(), event.getHostGroupName(),
-                    event.getAdjustment(), event.accepted());
+            cste = new ClusterDownscaleTriggerEvent(DECOMMISSION_EVENT.event(), event.getStackId(), event.getForceHealthyInstanceDeletion(),
+                    event.getHostGroupName(), event.getAdjustment(), event.accepted());
         } else {
-            cste = new ClusterDownscaleTriggerEvent(DECOMMISSION_EVENT.event(), event.getStackId(), event.getHostGroupName(),
-                    event.getPrivateIds(), event.accepted());
+            cste = new ClusterDownscaleTriggerEvent(DECOMMISSION_EVENT.event(), event.getStackId(), event.getForceHealthyInstanceDeletion(),
+                    event.getHostGroupName(), event.getPrivateIds(), event.accepted());
         }
         flowEventChain.add(cste);
         if (event.getScalingType() == ScalingType.DOWNSCALE_TOGETHER) {
@@ -57,9 +57,11 @@ public class DownscaleFlowEventChainFactory implements FlowEventChainFactory<Clu
             String instanceGroupName = Optional.ofNullable(hostGroupConstraint.getInstanceGroup()).map(InstanceGroup::getGroupName).orElse(null);
             StackScaleTriggerEvent sste;
             if (event.getPrivateIds() == null) {
-                sste = new StackDownscaleTriggerEvent(STACK_DOWNSCALE_EVENT.event(), event.getStackId(), instanceGroupName, event.getAdjustment());
+                sste = new StackDownscaleTriggerEvent(STACK_DOWNSCALE_EVENT.event(), event.getStackId(), event.getForceHealthyInstanceDeletion(),
+                        instanceGroupName, event.getAdjustment());
             } else {
-                sste = new StackDownscaleTriggerEvent(STACK_DOWNSCALE_EVENT.event(), event.getStackId(), instanceGroupName, event.getPrivateIds());
+                sste = new StackDownscaleTriggerEvent(STACK_DOWNSCALE_EVENT.event(), event.getStackId(), event.getForceHealthyInstanceDeletion(),
+                        instanceGroupName, event.getPrivateIds());
             }
             flowEventChain.add(sste);
         }

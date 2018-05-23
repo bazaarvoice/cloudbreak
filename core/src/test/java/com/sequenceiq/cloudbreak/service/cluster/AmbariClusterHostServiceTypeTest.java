@@ -215,7 +215,7 @@ public class AmbariClusterHostServiceTypeTest {
 
         underTest.updateHosts(stack.getId(), json);
 
-        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), json);
+        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), false, json);
         verify(blueprintValidator, times(1)).validateHostGroupScalingRequest(stack.getCluster().getBlueprint(), hostGroup, json.getScalingAdjustment());
     }
 
@@ -236,7 +236,7 @@ public class AmbariClusterHostServiceTypeTest {
 
         underTest.updateHosts(stack.getId(), json);
 
-        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), json);
+        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), false, json);
         verify(blueprintValidator, times(1)).validateHostGroupScalingRequest(stack.getCluster().getBlueprint(), hostGroup, json.getScalingAdjustment());
     }
 
@@ -258,7 +258,7 @@ public class AmbariClusterHostServiceTypeTest {
 
         underTest.updateHosts(stack.getId(), json);
 
-        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), json);
+        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), false, json);
         verify(blueprintValidator, times(1)).validateHostGroupScalingRequest(stack.getCluster().getBlueprint(), hostGroup, json.getScalingAdjustment());
     }
 
@@ -281,7 +281,7 @@ public class AmbariClusterHostServiceTypeTest {
 
         underTest.updateHosts(stack.getId(), json);
 
-        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), json);
+        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), false, json);
         verify(blueprintValidator, times(1)).validateHostGroupScalingRequest(stack.getCluster().getBlueprint(), hostGroup, json.getScalingAdjustment());
     }
 
@@ -303,7 +303,7 @@ public class AmbariClusterHostServiceTypeTest {
 
         underTest.updateHosts(stack.getId(), json);
 
-        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), json);
+        verify(flowManager, times(1)).triggerClusterDownscale(stack.getId(), false, json);
         verify(blueprintValidator, times(1)).validateHostGroupScalingRequest(stack.getCluster().getBlueprint(), hostGroup, json.getScalingAdjustment());
     }
 }

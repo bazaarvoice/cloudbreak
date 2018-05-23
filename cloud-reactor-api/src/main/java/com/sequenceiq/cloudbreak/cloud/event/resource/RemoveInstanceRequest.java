@@ -14,11 +14,14 @@ public class RemoveInstanceRequest extends CloudStackRequest<RemoveInstanceResul
 
     private final List<CloudInstance> instances;
 
+    private Boolean forceHealthyInstanceDeletion;
+
     public RemoveInstanceRequest(CloudContext cloudContext, CloudCredential cloudCredential, CloudStack cloudStack,
-            List<CloudResource> cloudResources, List<CloudInstance> instances) {
+            List<CloudResource> cloudResources, List<CloudInstance> instances, Boolean forceHealthyInstanceDeletion) {
         super(cloudContext, cloudCredential, cloudStack);
         this.cloudResources = cloudResources;
         this.instances = instances;
+        this.forceHealthyInstanceDeletion = forceHealthyInstanceDeletion;
     }
 
     public List<CloudResource> getCloudResources() {
@@ -27,5 +30,9 @@ public class RemoveInstanceRequest extends CloudStackRequest<RemoveInstanceResul
 
     public List<CloudInstance> getInstances() {
         return instances;
+    }
+
+    public Boolean getForceHealthyInstanceDeletion() {
+        return forceHealthyInstanceDeletion;
     }
 }

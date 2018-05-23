@@ -16,20 +16,25 @@ public class DownscaleStackRequest extends CloudStackRequest<DownscaleStackResul
 
     private final Object resourcesToScale;
 
+    private Boolean forceHealthyInstanceDeletion;
+
     public DownscaleStackRequest(CloudContext cloudContext, CloudCredential cloudCredential, CloudStack cloudStack, List<CloudResource> cloudResources,
-            List<CloudInstance> instances) {
+            List<CloudInstance> instances, Boolean forceHealthyInstanceDeletion) {
         super(cloudContext, cloudCredential, cloudStack);
         this.cloudResources = cloudResources;
         this.instances = instances;
         resourcesToScale = null;
+        this.forceHealthyInstanceDeletion = forceHealthyInstanceDeletion;
     }
 
     public DownscaleStackRequest(CloudContext cloudContext, CloudCredential cloudCredential, CloudStack cloudStack, List<CloudResource> cloudResources,
-            List<CloudInstance> instances, Object resourcesToScale) {
+            List<CloudInstance> instances, Object resourcesToScale, Boolean forceHealthyInstanceDeletion) {
         super(cloudContext, cloudCredential, cloudStack);
         this.cloudResources = cloudResources;
         this.instances = instances;
         this.resourcesToScale = resourcesToScale;
+        this.forceHealthyInstanceDeletion = forceHealthyInstanceDeletion;
+
     }
 
     public List<CloudResource> getCloudResources() {
@@ -42,5 +47,9 @@ public class DownscaleStackRequest extends CloudStackRequest<DownscaleStackResul
 
     public Object getResourcesToScale() {
         return resourcesToScale;
+    }
+
+    public Boolean getForceHealthyInstanceDeletion() {
+        return forceHealthyInstanceDeletion;
     }
 }

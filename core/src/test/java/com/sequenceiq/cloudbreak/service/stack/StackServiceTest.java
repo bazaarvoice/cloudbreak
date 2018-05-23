@@ -146,7 +146,7 @@ public class StackServiceTest {
         doNothing().when(downscaleValidatorService).checkInstanceIsTheAmbariServerOrNot(INSTANCE_PUBLIC_IP, CORE);
         doNothing().when(downscaleValidatorService).checkUserHasRightToTerminateInstance(true, OWNER, USER_ID, STACK_ID);
 
-        underTest.removeInstance(user, STACK_ID, INSTANCE_ID);
+        underTest.removeInstance(user, STACK_ID, INSTANCE_ID, false);
         verify(instanceMetaDataRepository, times(1)).findByInstanceId(STACK_ID, INSTANCE_ID);
         verify(downscaleValidatorService, times(1)).checkInstanceIsTheAmbariServerOrNot(INSTANCE_PUBLIC_IP, CORE);
         verify(downscaleValidatorService, times(1)).checkUserHasRightToTerminateInstance(true, OWNER, USER_ID,
@@ -165,12 +165,12 @@ public class StackServiceTest {
         expectedException.expect(BadRequestException.class);
         expectedException.expectMessage(exceptionMessage);
 
-        underTest.removeInstance(user, STACK_ID, INSTANCE_ID);
+        underTest.removeInstance(user, STACK_ID, INSTANCE_ID, false);
         verify(instanceMetaDataRepository, times(1)).findByInstanceId(STACK_ID, INSTANCE_ID);
         verify(downscaleValidatorService, times(1)).checkInstanceIsTheAmbariServerOrNot(INSTANCE_PUBLIC_IP, GATEWAY);
         verify(downscaleValidatorService, times(0)).checkUserHasRightToTerminateInstance(anyBoolean(), anyString(), anyString(),
                 anyLong());
-        verify(flowManager, times(0)).triggerStackRemoveInstance(anyLong(), anyString(), anyLong());
+        verify(flowManager, times(0)).triggerStackRemoveInstance(anyLong(), anyString(), anyLong(), anyBoolean());
     }
 
     @Test
@@ -192,12 +192,12 @@ public class StackServiceTest {
         expectedException.expect(AccessDeniedException.class);
         expectedException.expectMessage(exceptionMessage);
 
-        underTest.removeInstance(user, STACK_ID, INSTANCE_ID);
+        underTest.removeInstance(user, STACK_ID, INSTANCE_ID, false);
         verify(instanceMetaDataRepository, times(1)).findByInstanceId(STACK_ID, INSTANCE_ID);
         verify(downscaleValidatorService, times(1)).checkInstanceIsTheAmbariServerOrNot(INSTANCE_PUBLIC_IP, CORE);
         verify(downscaleValidatorService, times(1)).checkUserHasRightToTerminateInstance(false, owner, userId,
                 STACK_ID);
-        verify(flowManager, times(0)).triggerStackRemoveInstance(anyLong(), anyString(), anyLong());
+        verify(flowManager, times(0)).triggerStackRemoveInstance(anyLong(), anyString(), anyLong(), anyBoolean());
     }
 
     @Test
@@ -209,7 +209,7 @@ public class StackServiceTest {
         expectedException.expect(NotFoundException.class);
         expectedException.expectMessage(String.format("Metadata for instance %s has not found.", INSTANCE_ID));
 
-        underTest.removeInstance(user, STACK_ID, INSTANCE_ID);
+        underTest.removeInstance(user, STACK_ID, INSTANCE_ID, false);
     }
 
     @Test

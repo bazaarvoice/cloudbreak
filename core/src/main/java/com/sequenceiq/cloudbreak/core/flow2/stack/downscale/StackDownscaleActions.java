@@ -80,7 +80,8 @@ public class StackDownscaleActions {
             @Override
             protected void doExecute(StackScalingFlowContext context, DownscaleStackCollectResourcesResult payload, Map<Object, Object> variables) {
                 Selectable request =  new DownscaleStackRequest(context.getCloudContext(), context.getCloudCredential(), context.getCloudStack(),
-                        (List<CloudResource>) variables.get(RESOURCES), (List<CloudInstance>) variables.get(INSTANCES), payload.getResourcesToScale());
+                        (List<CloudResource>) variables.get(RESOURCES), (List<CloudInstance>) variables.get(INSTANCES),
+                        payload.getResourcesToScale(), context.getForceHealthyInstanceDeletion());
                 sendEvent(context.getFlowId(), request);
             }
         };
