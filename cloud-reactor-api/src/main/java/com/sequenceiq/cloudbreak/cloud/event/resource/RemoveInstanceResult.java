@@ -32,4 +32,9 @@ public class RemoveInstanceResult extends CloudPlatformResult<RemoveInstanceRequ
             return instances.stream().map(CloudInstance::getInstanceId).collect(Collectors.toSet());
         }
     }
+
+    @Override
+    public Boolean getForceHealthyInstanceDeletion() {
+        return getRequest().getForceHealthyInstanceDeletion();
+    }
 }

@@ -203,7 +203,8 @@ public interface StackV2Endpoint extends StackEndpoint {
     @Override
     @ApiOperation(value = StackOpDescription.DELETE_INSTANCE_BY_ID, produces = ContentType.JSON, notes = Notes.STACK_NOTES,
             nickname = "deleteInstanceStackV2")
-    Response deleteInstance(@PathParam("stackId") Long stackId, @PathParam("instanceId") String instanceId);
+    Response deleteInstance(@PathParam("stackId") Long stackId, @PathParam("instanceId") String instanceId,
+            @QueryParam("forceHealtyInstance") @DefaultValue("false") Boolean forceHealtyInstance);
 
     @DELETE
     @Path("{stackId}/deleteInstances")
@@ -211,7 +212,8 @@ public interface StackV2Endpoint extends StackEndpoint {
     @Override
     @ApiOperation(value = OperationDescriptions.StackOpDescription.DELETE_INSTANCE_BY_ID, produces = ContentType.JSON, notes = Notes.STACK_NOTES,
             nickname = "deleteInstancesStackV2")
-    Response deleteInstances(@PathParam("stackId") Long stackId, @QueryParam("instanceIds") Set<String> instanceIds);
+    Response deleteInstances(@PathParam("stackId") Long stackId, @QueryParam("instanceIds") Set<String> instanceIds,
+            @QueryParam("forceHealtyInstances") @DefaultValue("false") Boolean forceHealtyInstances);
 
     @GET
     @Path("{id}/certificate")

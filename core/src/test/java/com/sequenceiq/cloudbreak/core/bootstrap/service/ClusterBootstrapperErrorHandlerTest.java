@@ -122,7 +122,7 @@ public class ClusterBootstrapperErrorHandlerTest {
         when(instanceMetaDataRepository.save(any(InstanceMetaData.class))).then(returnsFirstArg());
         when(resourceRepository.findByStackIdAndNameAndType(nullable(Long.class), nullable(String.class), nullable(ResourceType.class)))
                 .thenReturn(new Resource());
-        when(connector.removeInstances(any(Stack.class), anySet(), anyString())).thenReturn(new HashSet<>());
+        when(connector.removeInstances(any(Stack.class), anySet(), anyString(), any())).thenReturn(new HashSet<>());
         when(instanceMetaDataRepository.findNotTerminatedByPrivateAddress(anyLong(), anyString())).thenAnswer(new Answer<InstanceMetaData>() {
             @Override
             public InstanceMetaData answer(InvocationOnMock invocation) {
@@ -155,7 +155,7 @@ public class ClusterBootstrapperErrorHandlerTest {
         verify(eventService, times(4)).fireCloudbreakEvent(anyLong(), anyString(), nullable(String.class));
         verify(instanceGroupRepository, times(3)).save(any(InstanceGroup.class));
         verify(instanceMetaDataRepository, times(3)).save(any(InstanceMetaData.class));
-        verify(connector, times(3)).removeInstances(any(Stack.class), anySet(), anyString());
+        verify(connector, times(3)).removeInstances(any(Stack.class), anySet(), anyString(), any());
         verify(resourceRepository, times(3)).findByStackIdAndNameAndType(anyLong(), anyString(), nullable(ResourceType.class));
         verify(resourceRepository, times(3)).delete(nullable(Long.class));
         verify(instanceGroupRepository, times(3)).findOneByGroupNameInStack(anyLong(), anyString());

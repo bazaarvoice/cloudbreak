@@ -29,8 +29,11 @@ public class InstanceTerminationContext extends CommonContext {
 
     private final List<InstanceMetaData> instanceMetaDataList;
 
+    private final Boolean forceHealthyInstanceDeletion;
+
     public InstanceTerminationContext(String flowId, Stack stack, CloudContext cloudContext, CloudCredential cloudCredential,
-            CloudStack cloudStack, Collection<CloudResource> cloudResources, List<CloudInstance> cloudInstances, List<InstanceMetaData> instanceMetaDataList) {
+            CloudStack cloudStack, Collection<CloudResource> cloudResources, List<CloudInstance> cloudInstances, List<InstanceMetaData> instanceMetaDataList,
+            Boolean forceHealthyInstanceDeletion) {
         super(flowId);
         this.stack = stack;
         this.cloudContext = cloudContext;
@@ -39,6 +42,7 @@ public class InstanceTerminationContext extends CommonContext {
         this.cloudResources = ImmutableList.copyOf(cloudResources);
         this.cloudInstances = cloudInstances;
         this.instanceMetaDataList = instanceMetaDataList;
+        this.forceHealthyInstanceDeletion = forceHealthyInstanceDeletion;
     }
 
     public Stack getStack() {
@@ -67,5 +71,9 @@ public class InstanceTerminationContext extends CommonContext {
 
     public List<InstanceMetaData> getInstanceMetaDataList() {
         return instanceMetaDataList;
+    }
+
+    public Boolean getForceHealthyInstanceDeletion() {
+        return forceHealthyInstanceDeletion;
     }
 }

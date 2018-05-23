@@ -93,9 +93,9 @@ public class ReactorFlowManager {
         notify(selector, stackAndClusterUpscaleTriggerEvent);
     }
 
-    public void triggerStackDownscale(Long stackId, InstanceGroupAdjustmentJson instanceGroupAdjustment) {
+    public void triggerStackDownscale(Long stackId, Boolean forceHealtyInstances, InstanceGroupAdjustmentJson instanceGroupAdjustment) {
         String selector = STACK_DOWNSCALE_EVENT.event();
-        Acceptable stackScaleTriggerEvent = new StackDownscaleTriggerEvent(selector, stackId, instanceGroupAdjustment.getInstanceGroup(),
+        Acceptable stackScaleTriggerEvent = new StackDownscaleTriggerEvent(selector, stackId, forceHealtyInstances, instanceGroupAdjustment.getInstanceGroup(),
                 instanceGroupAdjustment.getScalingAdjustment());
         notify(selector, stackScaleTriggerEvent);
     }
@@ -105,16 +105,16 @@ public class ReactorFlowManager {
         notify(selector, new StackSyncTriggerEvent(selector, stackId, true));
     }
 
-    public void triggerStackRemoveInstance(Long stackId, String hostGroup, Long privateId) {
+    public void triggerStackRemoveInstance(Long stackId, String hostGroup, Long privateId, Boolean forceHealtyInstance) {
         String selector = FlowChainTriggers.FULL_DOWNSCALE_TRIGGER_EVENT;
-        ClusterAndStackDownscaleTriggerEvent event = new ClusterAndStackDownscaleTriggerEvent(selector, stackId, hostGroup, Collections.singleton(privateId),
-                ScalingType.DOWNSCALE_TOGETHER, new Promise<>());
+        ClusterAndStackDownscaleTriggerEvent event = new ClusterAndStackDownscaleTriggerEvent(selector, stackId, forceHealtyInstance, hostGroup,
+                Collections.singleton(privateId), ScalingType.DOWNSCALE_TOGETHER, new Promise<>());
         notify(selector, event);
     }
 
-    public void triggerStackRemoveInstances(Long stackId, String hostGroup, Set<Long> privateIds) {
+    public void triggerStackRemoveInstances(Long stackId, String hostGroup, Set<Long> privateIds, Boolean forceHealtyInstances) {
         String selector = FlowChainTriggers.FULL_DOWNSCALE_TRIGGER_EVENT;
-        ClusterAndStackDownscaleTriggerEvent event = new ClusterAndStackDownscaleTriggerEvent(selector, stackId, hostGroup, privateIds,
+        ClusterAndStackDownscaleTriggerEvent event = new ClusterAndStackDownscaleTriggerEvent(selector, stackId, forceHealtyInstances, hostGroup, privateIds,
                 ScalingType.DOWNSCALE_TOGETHER, new Promise<>());
         notify(selector, event);
     }
@@ -164,10 +164,10 @@ public class ReactorFlowManager {
         notify(selector, event);
     }
 
-    public void triggerClusterDownscale(Long stackId, HostGroupAdjustmentJson hostGroupAdjustment) {
+    public void triggerClusterDownscale(Long stackId, Boolean forceHealtyInstances, HostGroupAdjustmentJson hostGroupAdjustment) {
         String selector = FlowChainTriggers.FULL_DOWNSCALE_TRIGGER_EVENT;
         ScalingType scalingType = hostGroupAdjustment.getWithStackUpdate() ? ScalingType.DOWNSCALE_TOGETHER : ScalingType.DOWNSCALE_ONLY_CLUSTER;
-        Acceptable event = new ClusterAndStackDownscaleTriggerEvent(selector, stackId,
+        Acceptable event = new ClusterAndStackDownscaleTriggerEvent(selector, stackId, forceHealtyInstances,
                 hostGroupAdjustment.getHostGroup(), hostGroupAdjustment.getScalingAdjustment(), scalingType);
         notify(selector, event);
     }

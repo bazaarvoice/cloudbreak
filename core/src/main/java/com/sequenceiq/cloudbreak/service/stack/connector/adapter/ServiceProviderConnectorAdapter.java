@@ -71,7 +71,7 @@ public class ServiceProviderConnectorAdapter {
     @Inject
     private ResourceToCloudResourceConverter cloudResourceConverter;
 
-    public Set<String> removeInstances(Stack stack, Set<String> instanceIds, String instanceGroup) {
+    public Set<String> removeInstances(Stack stack, Set<String> instanceIds, String instanceGroup, Boolean forceHealthyInstances) {
         LOGGER.debug("Assembling downscale stack event for stack: {}", stack);
         Location location = location(region(stack.getRegion()), availabilityZone(stack.getAvailabilityZone()));
         CloudContext cloudContext = new CloudContext(stack.getId(), stack.getName(), stack.cloudPlatform(), stack.getOwner(), stack.getPlatformVariant(),
@@ -88,7 +88,7 @@ public class ServiceProviderConnectorAdapter {
         }
         CloudStack cloudStack = cloudStackConverter.convertForDownscale(stack, instanceIds);
         DownscaleStackRequest downscaleRequest = new DownscaleStackRequest(cloudContext,
-                cloudCredential, cloudStack, resources, instances);
+                cloudCredential, cloudStack, resources, instances, forceHealthyInstances);
         LOGGER.info("Triggering downscale stack event: {}", downscaleRequest);
         eventBus.notify(downscaleRequest.selector(), eventFactory.createEvent(downscaleRequest));
         try {

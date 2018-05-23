@@ -77,7 +77,8 @@ abstract class AbstractInstanceTerminationAction<P extends InstancePayload>
             instanceMetaDataList.add(instanceMetaData);
             cloudInstances.add(cloudInstance);
         }
-        return new InstanceTerminationContext(flowId, stack, cloudContext, cloudCredential, cloudStack, cloudResources, cloudInstances, instanceMetaDataList);
+        return new InstanceTerminationContext(flowId, stack, cloudContext, cloudCredential, cloudStack, cloudResources,
+            cloudInstances, instanceMetaDataList, payload.getForceHealthyInstanceDeletion());
     }
 
     @Override

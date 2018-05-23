@@ -98,7 +98,7 @@ public class ClusterBootstrapperErrorHandler {
                         Arrays.asList(instanceMetaData.getInstanceId(), ig.getGroupName()));
                 LOGGER.info(message);
                 eventService.fireCloudbreakEvent(stack.getId(), Status.UPDATE_IN_PROGRESS.name(), message);
-                deleteResourceAndDependencies(stack, instanceMetaData);
+                deleteResourceAndDependencies(stack, instanceMetaData, Boolean.FALSE);
                 deleteInstanceResourceFromDatabase(stack, instanceMetaData);
                 long timeInMillis = Calendar.getInstance().getTimeInMillis();
                 instanceMetaData.setTerminationDate(timeInMillis);
@@ -127,11 +127,11 @@ public class ClusterBootstrapperErrorHandler {
         return missingNodes;
     }
 
-    private void deleteResourceAndDependencies(Stack stack, InstanceMetaData instanceMetaData) {
+    private void deleteResourceAndDependencies(Stack stack, InstanceMetaData instanceMetaData, Boolean forceHealthyInstances) {
         LOGGER.info("Rolling back instance [name: {}, id: {}]", instanceMetaData.getId(), instanceMetaData.getInstanceId());
         Set<String> instanceIds = new HashSet<>();
         instanceIds.add(instanceMetaData.getInstanceId());
-        connector.removeInstances(stack, instanceIds, instanceMetaData.getInstanceGroup().getGroupName());
+        connector.removeInstances(stack, instanceIds, instanceMetaData.getInstanceGroup().getGroupName(), forceHealthyInstances);
         LOGGER.info("Deleted instance [name: {}, id: {}]", instanceMetaData.getId(), instanceMetaData.getInstanceId());
     }
 

@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.sequenceiq.cloudbreak.common.type.HostMetadataState;
+import com.sequenceiq.cloudbreak.service.stack.flow.ScalingFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -54,6 +56,8 @@ public class InstanceTerminationService {
                 HostMetadata hostMetadata = hostMetadataRepository.findHostInClusterByName(stack.getCluster().getId(), hostName);
                 if (hostMetadata == null) {
                     LOGGER.info("Nothing to remove since hostmetadata is null");
+                } else if (!context.getForceHealthyInstanceDeletion() && HostMetadataState.HEALTHY.equals(hostMetadata.getHostMetadataState())) {
+                    throw new ScalingFailedException(String.format("Host (%s) is in HEALTHY state. Cannot be removed.", hostName));
                 }
             }
             if (hostName != null) {

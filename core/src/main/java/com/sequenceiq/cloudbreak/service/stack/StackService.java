@@ -430,7 +430,7 @@ public class StackService {
         delete(stack, forced, deleteDependencies);
     }
 
-    public void removeInstance(@Nonnull IdentityUser user, Long stackId, String instanceId) {
+    public void removeInstance(@Nonnull IdentityUser user, Long stackId, String instanceId, Boolean forceHealtyInstance) {
         Stack stack = get(stackId);
         InstanceMetaData metaData = instanceMetaDataRepository.findByInstanceId(stackId, instanceId);
         if (metaData == null) {
@@ -438,11 +438,11 @@ public class StackService {
         } else {
             downscaleValidatorService.checkInstanceIsTheAmbariServerOrNot(metaData.getPublicIp(), metaData.getInstanceMetadataType());
             downscaleValidatorService.checkUserHasRightToTerminateInstance(stack.isPublicInAccount(), stack.getOwner(), user.getUserId(), stackId);
-            flowManager.triggerStackRemoveInstance(stackId, metaData.getInstanceGroupName(), metaData.getPrivateId());
+            flowManager.triggerStackRemoveInstance(stackId, metaData.getInstanceGroupName(), metaData.getPrivateId(), forceHealtyInstance);
         }
     }
 
-    public void removeInstances(IdentityUser user, Long stackId, Set<String> instanceIds) {
+    public void removeInstances(IdentityUser user, Long stackId, Set<String> instanceIds, Boolean forceHealtyInstances) {
         Stack stack = get(stackId);
         authorizationService.hasWritePermission(stack);
         Map<String, Set<Long>> groupToDiscoveryPrivateIdMap = new HashMap<>();
@@ -461,7 +461,7 @@ public class StackService {
                 groupToDiscoveryPrivateIdMap.put(metadata.getInstanceGroupName(), privateIds);
             }
         }
-        groupToDiscoveryPrivateIdMap.forEach((k, v) -> flowManager.triggerStackRemoveInstances(stackId, k, v));
+        groupToDiscoveryPrivateIdMap.forEach((k, v) -> flowManager.triggerStackRemoveInstances(stackId, k, v, forceHealtyInstances));
     }
 
     public void updateStatus(Long stackId, StatusRequest status, boolean updateCluster) {
@@ -602,7 +602,7 @@ public class StackService {
             flowManager.triggerStackUpscale(stack.getId(), instanceGroupAdjustmentJson, withClusterEvent);
         } else {
             stackUpdater.updateStackStatus(stackId, DetailedStackStatus.DOWNSCALE_REQUESTED);
-            flowManager.triggerStackDownscale(stack.getId(), instanceGroupAdjustmentJson);
+            flowManager.triggerStackDownscale(stack.getId(), Boolean.FALSE, instanceGroupAdjustmentJson);
         }
     }
 

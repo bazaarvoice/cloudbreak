@@ -51,7 +51,8 @@ public class ClusterDownscaleService {
     @Inject
     private HostGroupService hostGroupService;
 
-    public void clusterDownscaleStarted(long stackId, String hostGroupName, Integer scalingAdjustment, Set<Long> privateIds) {
+    public void clusterDownscaleStarted(long stackId, Boolean forceHealthyInstanceDeletion, String hostGroupName,
+            Integer scalingAdjustment, Set<Long> privateIds) {
         flowMessageService.fireEventAndLog(stackId, Msg.AMBARI_CLUSTER_SCALING_DOWN, Status.UPDATE_IN_PROGRESS.name());
         clusterService.updateClusterStatusByStackId(stackId, Status.UPDATE_IN_PROGRESS);
         if (scalingAdjustment != null) {
