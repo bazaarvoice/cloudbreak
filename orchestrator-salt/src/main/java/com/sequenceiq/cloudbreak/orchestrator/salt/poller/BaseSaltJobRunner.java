@@ -99,6 +99,10 @@ public abstract class BaseSaltJobRunner implements SaltJobRunner {
         }
     }
 
+    public Set<Node> getAllNode() {
+        return allNode;
+    }
+
     @Override
     public String toString() {
         return "BaseSaltJobRunner{"

@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.orchestrator.salt.domain;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,15 @@ public class ApplyResponse {
     }
 
     public String getJid() {
-        return result.get(0).get("jid").toString();
+        if (result != null && !result.isEmpty() && result.get(0).containsKey("jid")) {
+            return result.get(0).get("jid").toString();
+        }
+
+        return null;
     }
 
+    @Override
+    public String toString() {
+        return Arrays.toString(result.toArray());
+    }
 }
