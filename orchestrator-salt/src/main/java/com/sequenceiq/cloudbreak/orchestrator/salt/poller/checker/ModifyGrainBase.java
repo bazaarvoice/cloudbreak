@@ -1,6 +1,7 @@
 package com.sequenceiq.cloudbreak.orchestrator.salt.poller.checker;
 
 import java.util.Map;
+import com.sequenceiq.cloudbreak.orchestrator.salt.client.target.BVCompound;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
@@ -15,6 +16,8 @@ import com.sequenceiq.cloudbreak.orchestrator.salt.client.target.Compound.Compou
 import com.sequenceiq.cloudbreak.orchestrator.salt.domain.ApplyResponse;
 import com.sequenceiq.cloudbreak.orchestrator.salt.poller.BaseSaltJobRunner;
 import com.sequenceiq.cloudbreak.orchestrator.salt.states.SaltStates;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class ModifyGrainBase extends BaseSaltJobRunner {
 
@@ -39,7 +42,7 @@ public abstract class ModifyGrainBase extends BaseSaltJobRunner {
     @Override
     public String submit(SaltConnector saltConnector) throws SaltJobFailedException {
         Compound target = new Compound(getTarget(), compoundType);
-        ApplyResponse response = addGrain ? SaltStates.addGrain(saltConnector, target, key, value)
+        ApplyResponse response = addGrain ? SaltStates.addGrain(saltConnector, new BVCompound(getTarget()), key, value)
                 : SaltStates.removeGrain(saltConnector, target, key, value);
         Set<String> missingIps = collectMissingNodes(collectNodes(response));
         Map<String, JsonNode> grains = SaltStates.getGrains(saltConnector, target, key);

@@ -1,10 +1,12 @@
 package com.sequenceiq.cloudbreak.util;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +30,13 @@ public class StackUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StackUtil.class);
 
+    /**
+     * Instances created recently will be at least a few hours ago
+     */
+    private static final int RECENTLY_CREATED_HOUR_S = 2 * 3600;
+
+    private static final Date SINCE_1970 = new Date(0L);
+
     @Inject
     private OrchestratorTypeResolver orchestratorTypeResolver;
 
@@ -35,10 +44,34 @@ public class StackUtil {
     private InstanceMetaDataService instanceMetaDataService;
 
     public Set<Node> collectNodes(Stack stack) {
+        return collectNodes(stack, false);
+    }
+
+    public Set<Node> collectProvisioningNodes(Stack stack) {
+        return collectNodes(stack, true);
+    }
+
+    public Set<Node> collectRecentlyCreatedNodes(Stack stack) {
+        return collectNodes(stack, false, Date.from(Instant.now().minusSeconds(RECENTLY_CREATED_HOUR_S)));
+    }
+
+    private Set<Node> collectNodes(Stack stack, boolean provisioning) {
+        return collectNodes(stack, provisioning, SINCE_1970);
+    }
+
+    private Set<Node> collectNodes(Stack stack, boolean provisioning, Date createdSince) {
         Set<Node> agents = new HashSet<>();
         for (InstanceGroup instanceGroup : stack.getInstanceGroups()) {
             if (instanceGroup.getNodeCount() != 0) {
-                for (InstanceMetaData im : instanceGroup.getNotDeletedInstanceMetaDataSet()) {
+                Set<InstanceMetaData> instances = provisioning
+                    ? instanceGroup.getProvisioningInstanceMetaDataSet()
+                    : instanceGroup.getNotDeletedInstanceMetaDataSet();
+
+                instances = instances.stream()
+                    .filter(im -> im.getStartDate() >= createdSince.getTime())
+                    .collect(Collectors.toSet());
+
+                for (InstanceMetaData im : instances) {
                     if (im.getDiscoveryFQDN() != null) {
                         agents.add(new Node(im.getPrivateIp(), im.getPublicIp(), im.getDiscoveryFQDN(), im.getInstanceGroupName()));
                     }

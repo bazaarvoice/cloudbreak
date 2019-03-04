@@ -145,16 +145,19 @@ public class SaltConnector implements Closeable {
                 }
             }
         }
+        LOGGER.info("POST {}/{}: params={}", saltTarget.getUri(), SaltEndpoint.SALT_RUN.getContextPath(), toJson(form.asMap()));
         Response response = saltTarget.path(SaltEndpoint.SALT_RUN.getContextPath()).request()
                 .header(SIGN_HEADER, PkiUtil.generateSignature(signatureKey, toJson(form.asMap()).getBytes()))
                 .post(Entity.form(form));
-        T responseEntity = JaxRSUtil.response(response, clazz);
-        try {
-            LOGGER.info("Salt run has been executed. fun: {}, response: {}", fun, JsonUtil.writeValueAsString(responseEntity));
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Can not read response from salt", e);
+
+        if (response.getStatus() == Response.Status.OK.getStatusCode()) {
+            T responseEntity = JaxRSUtil.response(response, clazz);
+            LOGGER.info("Salt run has been executed. fun: {}. response={}", fun, JsonUtil.writeValueAsString(responseEntity));
+            return responseEntity;
+        } else {
+            throw new RuntimeException(String.format(
+                "%d response status from salt-api. Response body=%s", response.getStatus(), response.readEntity(String.class)));
         }
-        return responseEntity;
     }
 
     public <T> T wheel(String fun, Collection<String> match, Class<T> clazz) {

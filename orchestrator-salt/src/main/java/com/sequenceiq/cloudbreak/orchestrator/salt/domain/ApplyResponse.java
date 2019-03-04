@@ -1,5 +1,6 @@
 package com.sequenceiq.cloudbreak.orchestrator.salt.domain;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,4 +32,8 @@ public class ApplyResponse {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return Arrays.toString(result.toArray());
+    }
 }

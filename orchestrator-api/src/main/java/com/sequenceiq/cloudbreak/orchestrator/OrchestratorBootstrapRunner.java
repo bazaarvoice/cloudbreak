@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.orchestrator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -32,6 +33,8 @@ public class OrchestratorBootstrapRunner implements Callable<Boolean> {
     private static final int MAX_RETRY_ON_ERROR = 20;
 
     private static final int MINIMUM_DISPLAYED_TIME_IN_MIN = 1;
+
+    private static final int PRINT_STACKTRACE_EVERY_MESSAGE = 10;
 
     private final OrchestratorBootstrap orchestratorBootstrap;
 
@@ -102,8 +105,10 @@ public class OrchestratorBootstrapRunner implements Callable<Boolean> {
             } catch (CloudbreakOrchestratorInProgressException ex) {
                 actualException = ex;
                 String elapsedTimeLog = createElapseTimeLog(initialStartTime, startTime);
-                LOGGER.warn("Orchestrator component {} start in progress, retrying [{}/{}] {}, Reason: {}, additional info: {}",
-                        type, retryCount, maxRetryCount, elapsedTimeLog, actualException, orchestratorBootstrap);
+                LOGGER.warn("Orchestrator component {} start in progress, retrying [{}/{}] {}, Reason: {}, RootCause: {}, additional info: {}",
+                    type, retryCount, maxRetryCount, elapsedTimeLog, actualException,
+                    ExceptionUtils.getRootCauseMessage(actualException), orchestratorBootstrap);
+                logStacktraceSometime(retryCount, ex);
                 retryCount++;
                 if (retryCount <= maxRetryCount) {
                     trySleeping();
@@ -113,8 +118,10 @@ public class OrchestratorBootstrapRunner implements Callable<Boolean> {
             } catch (Exception ex) {
                 actualException = ex;
                 String elapsedTimeLog = createElapseTimeLog(initialStartTime, startTime);
-                LOGGER.warn("Orchestrator component {} failed to start, retrying [{}/{}], error count [{}/{}]. {}, Reason: {}, additional info: {}",
-                        type, retryCount, maxRetryCount, errorCount, maxRetryOnError, elapsedTimeLog, actualException, orchestratorBootstrap);
+                LOGGER.warn("Orchestrator component {} failed to start, retrying [{}/{}], error count [{}/{}]. {}, "
+                        + "Reason: {}, RootCause: {}, additional info: {}",
+                        type, retryCount, maxRetryCount, errorCount, maxRetryOnError, elapsedTimeLog, actualException,
+                        ExceptionUtils.getRootCauseMessage(actualException), orchestratorBootstrap);
                 retryCount++;
                 errorCount++;
                 if (belowAttemptThreshold(retryCount, errorCount)) {
@@ -126,6 +133,12 @@ public class OrchestratorBootstrapRunner implements Callable<Boolean> {
         }
 
         return checkResult(success, retryCount, actualException);
+    }
+
+    private void logStacktraceSometime(int retryCount, Exception ex) {
+        if (retryCount % PRINT_STACKTRACE_EVERY_MESSAGE == 1) {
+            LOGGER.warn("Stacktrace: {}", ExceptionUtils.getStackTrace(ex));
+        }
     }
 
     private String createElapseTimeLog(long initialStartTime, long startTime) {
@@ -143,6 +156,8 @@ public class OrchestratorBootstrapRunner implements Callable<Boolean> {
         String cause = null;
         if (actualException != null) {
             cause = actualException.getMessage();
+            LOGGER.error(ExceptionUtils.getRootCauseMessage(actualException));
+            LOGGER.error(ExceptionUtils.getStackTrace(actualException));
         }
         String messageTemplate = success == null
                 ? "Timeout: Orchestrator component failed to finish in %d min(s), last message: %s"
