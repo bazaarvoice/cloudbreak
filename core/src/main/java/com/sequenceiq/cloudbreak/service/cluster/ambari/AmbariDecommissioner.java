@@ -18,12 +18,14 @@ import static java.util.Collections.singletonMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -381,9 +383,11 @@ public class AmbariDecommissioner {
     private Map<String, HostMetadata> collectHostMetadata(Cluster cluster, String hostGroupName, Collection<String> hostNames) {
         HostGroup hostGroup = hostGroupService.getByClusterIdAndName(cluster.getId(), hostGroupName);
         Set<HostMetadata> hostsInHostGroup = hostGroup.getHostMetadata();
-        Map<String, HostMetadata> hostMetadatas = hostsInHostGroup.stream().filter(hostMetadata -> hostNames.contains(hostMetadata.getHostName())).collect(
-                Collectors.toMap(HostMetadata::getHostName, hostMetadata -> hostMetadata));
-        return hostMetadatas;
+        Map<String, Optional<HostMetadata>> hostMetadatas = hostsInHostGroup.stream()
+            .filter(hostMetadata -> hostNames.contains(hostMetadata.getHostName()))
+            .collect(Collectors.groupingBy(HostMetadata::getHostName, Collectors.maxBy(Comparator.comparing(HostMetadata::getId))));
+        return hostMetadatas.entrySet().stream().filter(e -> e.getValue().isPresent())
+            .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().get()));
     }
 
     private int getReplicationFactor(ServiceAndHostService ambariClient, String hostGroup) {
