@@ -113,6 +113,8 @@ public class AwsResourceConnector implements ResourceConnector<Object> {
 
     private static final int INCREMENT_HOST_NUM = 256;
 
+    private static final int DOWNSCALE_MAX_PER_BATCH = 20;
+
     private static final int CIDR_PREFIX = 24;
 
     private static final List<String> UPSCALE_PROCESSES = asList("Launch");
@@ -658,21 +660,26 @@ public class AwsResourceConnector implements ResourceConnector<Object> {
             }
             String asGroupName = cfStackUtil.getAutoscalingGroupName(auth, vms.get(0).getTemplate().getGroupName(),
                     auth.getCloudContext().getLocation().getRegion().value());
-            DetachInstancesRequest detachInstancesRequest = new DetachInstancesRequest().withAutoScalingGroupName(asGroupName).withInstanceIds(instanceIds)
-                    .withShouldDecrementDesiredCapacity(true);
-            AmazonAutoScalingRetryClient amazonASClient = awsClient.createAutoScalingRetryClient(new AwsCredentialView(auth.getCloudCredential()),
-                    auth.getCloudContext().getLocation().getRegion().value());
-            detachInstances(instanceIds, detachInstancesRequest, amazonASClient);
             AmazonEC2Client amazonEC2Client = awsClient.createAccess(new AwsCredentialView(auth.getCloudCredential()),
-                    auth.getCloudContext().getLocation().getRegion().value());
-            terminateInstances(instanceIds, amazonEC2Client);
-            LOGGER.info("Terminated instances in stack '{}': '{}'", auth.getCloudContext().getId(), instanceIds);
-            try {
-                amazonASClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest()
+                auth.getCloudContext().getLocation().getRegion().value());
+            AmazonAutoScalingRetryClient amazonASClient = awsClient.createAutoScalingRetryClient(new AwsCredentialView(auth.getCloudCredential()),
+                auth.getCloudContext().getLocation().getRegion().value());
+
+            for (List<String> instanceIdsBatches : Lists.partition(instanceIds, DOWNSCALE_MAX_PER_BATCH)) {
+                DetachInstancesRequest detachInstancesRequest = new DetachInstancesRequest()
+                    .withAutoScalingGroupName(asGroupName)
+                    .withInstanceIds(instanceIdsBatches)
+                    .withShouldDecrementDesiredCapacity(true);
+                detachInstances(instanceIdsBatches, detachInstancesRequest, amazonASClient);
+                terminateInstances(instanceIdsBatches, amazonEC2Client);
+                LOGGER.info("Terminated instances in stack '{}': '{}'", auth.getCloudContext().getId(), instanceIdsBatches);
+                try {
+                    amazonASClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest()
                         .withAutoScalingGroupName(asGroupName)
                         .withMaxSize(getInstanceCount(stack, vms.get(0).getTemplate().getGroupName())));
-            } catch (AmazonServiceException e) {
-                LOGGER.warn(e.getErrorMessage());
+                } catch (AmazonServiceException e) {
+                    LOGGER.warn(e.getErrorMessage());
+                }
             }
         }
         return check(auth, resources);
