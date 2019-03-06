@@ -673,13 +673,14 @@ public class AwsResourceConnector implements ResourceConnector<Object> {
                 detachInstances(instanceIdsBatches, detachInstancesRequest, amazonASClient);
                 terminateInstances(instanceIdsBatches, amazonEC2Client);
                 LOGGER.info("Terminated instances in stack '{}': '{}'", auth.getCloudContext().getId(), instanceIdsBatches);
-                try {
-                    amazonASClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest()
-                        .withAutoScalingGroupName(asGroupName)
-                        .withMaxSize(getInstanceCount(stack, vms.get(0).getTemplate().getGroupName())));
-                } catch (AmazonServiceException e) {
-                    LOGGER.warn(e.getErrorMessage());
-                }
+            }
+
+            try {
+                amazonASClient.updateAutoScalingGroup(new UpdateAutoScalingGroupRequest()
+                    .withAutoScalingGroupName(asGroupName)
+                    .withMaxSize(getInstanceCount(stack, vms.get(0).getTemplate().getGroupName())));
+            } catch (AmazonServiceException e) {
+                LOGGER.warn(e.getErrorMessage());
             }
         }
         return check(auth, resources);
