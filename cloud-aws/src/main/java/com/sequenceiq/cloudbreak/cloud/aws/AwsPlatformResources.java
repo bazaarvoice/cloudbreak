@@ -359,7 +359,9 @@ public class AwsPlatformResources implements PlatformResources {
     @Override
     @Cacheable(cacheNames = "cloudResourceVmTypeCache", key = "#cloudCredential?.id + #region.getRegionName()")
     public CloudVmTypes virtualMachines(CloudCredential cloudCredential, Region region, Map<String, String> filters) {
+        LOGGER.info("CloudCredential(id=%s, name=%s)".format(cloudCredential.getId().toString(), cloudCredential.getName()));
         CloudRegions regions = regions(cloudCredential, region, filters);
+        LOGGER.info("CloudRegions regions: %s".format(regions.toString()));
 
         Map<String, Set<VmType>> cloudVmResponses = new HashMap<>();
         Map<String, VmType> defaultCloudVmResponses = new HashMap<>();
