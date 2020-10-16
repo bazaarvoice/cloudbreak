@@ -1,7 +1,9 @@
 package com.sequenceiq.cloudbreak.controller.validation.template;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -10,6 +12,8 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Suppliers;
@@ -30,6 +34,7 @@ import com.sequenceiq.cloudbreak.service.stack.CloudParameterService;
 
 @Component
 public class TemplateValidator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TemplateValidator.class);
 
     @Inject
     private CloudParameterService cloudParameterService;
@@ -43,42 +48,57 @@ public class TemplateValidator {
     private final Supplier<Map<Platform, PlatformParameters>> platformParameters =
             Suppliers.memoize(() -> cloudParameterService.getPlatformParameters());
 
-    public void validateTemplateRequest(Credential credential, Template value, String region, String availabilityZone, String variant) {
+    private List<String> getVmTypes(Set<VmType> availableVmTypes) {
+        List vmTypes = new ArrayList();
+        for (VmType type : availableVmTypes) {
+            vmTypes.add(type.value());
+        }
+        return vmTypes;
+    }
 
+    public void validateTemplateRequest(Credential credential, Template template, String region, String availabilityZone, String variant) {
+        LOGGER.info("Josh and Toby's version. validateTemplateRequest is invoked");
 
+        String debugMsg = null;
         CloudVmTypes cloudVmTypes = cloudParameterService.getVmTypesV2(credential, region, variant, new HashMap<>());
 
-        if (StringUtils.isEmpty(value.getInstanceType())) {
-            validateCustomInstanceType(value);
+        if (StringUtils.isEmpty(template.getInstanceType())) {
+            validateCustomInstanceType(template);
         } else {
             VmType vmType = null;
             VolumeParameterType volumeParameterType = null;
-            Platform platform = Platform.platform(value.cloudPlatform());
+            Platform platform = Platform.platform(template.cloudPlatform());
             Map<String, Set<VmType>> machines = cloudVmTypes.getCloudVmResponses();
+            LOGGER.info("Checkpoint1");
             String locationString = locationService.location(region, availabilityZone);
             if (machines.containsKey(locationString) && !machines.get(locationString).isEmpty()) {
+                LOGGER.info("Checkpoint2 template vmtype spec is %s. locationString=%s".format(template.getInstanceType(), locationString));
+                LOGGER.info(String.join(" ", getVmTypes(machines.get(locationString))));
                 for (VmType type : machines.get(locationString)) {
-                    if (type.value().equals(value.getInstanceType())) {
+                    LOGGER.info("Checkpoint3");
+                    if (type.value().equals(template.getInstanceType())) {
                         vmType = type;
                         break;
                     }
                 }
+                LOGGER.info("Checkpoint4");
                 if (vmType == null) {
                     throw new BadRequestException(
-                            String.format("The '%s' instance type isn't supported by '%s' platform", value.getInstanceType(), platform.value()));
+                            String.format("The '%s' instance type isn't supported by '%s' platform",
+                                    template.getInstanceType(), platform.value()));
                 }
             }
             Map<Platform, Map<String, VolumeParameterType>> disks = diskMappings.get();
             if (disks.containsKey(platform) && !disks.get(platform).isEmpty()) {
                 Map<String, VolumeParameterType> map = disks.get(platform);
-                volumeParameterType = map.get(value.getVolumeType());
+                volumeParameterType = map.get(template.getVolumeType());
                 if (volumeParameterType == null) {
                     throw new BadRequestException(
-                            String.format("The '%s' volume type isn't supported by '%s' platform", value.getVolumeType(), platform.value()));
+                            String.format("The '%s' volume type isn't supported by '%s' platform", template.getVolumeType(), platform.value()));
                 }
             }
 
-            validateVolume(value, vmType, platform, volumeParameterType);
+            validateVolume(template, vmType, platform, volumeParameterType);
         }
     }
 
