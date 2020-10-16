@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.cloud.model;
 import com.sequenceiq.cloudbreak.cloud.model.generic.StringType;
 
 public class VmType extends StringType {
+    private String vmType;
 
     private VmTypeMeta metaData;
 
@@ -16,6 +17,7 @@ public class VmType extends StringType {
         super(vmType);
         metaData = meta;
         this.extended = extended;
+        this.vmType = vmType;
     }
 
     public static VmType vmType(String vmType) {
@@ -53,7 +55,8 @@ public class VmType extends StringType {
     @Override
     public String toString() {
         return "VmType{"
-                + "metaData=" + metaData
+                + "vmType=" + vmType
+                + ", metaData=" + metaData
                 + ", extended=" + extended
                 + '}';
     }

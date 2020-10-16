@@ -171,6 +171,7 @@ public class StackCommonService implements StackEndpoint {
 
     @Override
     public Set<AutoscaleStackResponse> getAllForAutoscale() {
+        LOGGER.info("Josh and Toby's version is live and used on cloudbreak");
         LOGGER.info("Get all stack, autoscale authorized only.");
         return stackService.getAllForAutoscale();
     }

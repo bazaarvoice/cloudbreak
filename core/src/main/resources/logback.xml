@@ -51,4 +51,9 @@
         <appender-ref ref="STDOUT"/>
     </logger>
 
+    <logger name="com.sequenceiq.cloudbreak" level="INFO" additivity="false">
+        <appender-ref ref="CB_NODEID_BASED"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
 </configuration>
