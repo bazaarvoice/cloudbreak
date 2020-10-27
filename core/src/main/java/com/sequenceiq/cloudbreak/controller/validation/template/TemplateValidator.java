@@ -52,6 +52,8 @@ public class TemplateValidator {
 
     public void validateTemplateRequest(Credential credential, Template template, String region, String availabilityZone, String variant) {
 
+        LOGGER.info("Josh and Toby's version. validateTemplateRequest is invoked");
+
         String debugMsg = null;
         CloudVmTypes cloudVmTypes = cloudParameterService.getVmTypesV2(credential, region, variant, new HashMap<>());
 
