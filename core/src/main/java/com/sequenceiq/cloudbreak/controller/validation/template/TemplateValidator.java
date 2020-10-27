@@ -52,6 +52,8 @@ public class TemplateValidator {
 
     public void validateTemplateRequest(Credential credential, Template template, String region, String availabilityZone, String variant) {
 
+        LOGGER.info("Josh and Toby's version. validateTemplateRequest is invoked");
+
         String debugMsg = null;
         CloudVmTypes cloudVmTypes = cloudParameterService.getVmTypesV2(credential, region, variant, new HashMap<>());
 
@@ -62,6 +64,7 @@ public class TemplateValidator {
             VolumeParameterType volumeParameterType = null;
             Platform platform = Platform.platform(template.cloudPlatform());
             Map<String, Set<VmType>> machines = cloudVmTypes.getCloudVmResponses();
+            LOGGER.info("Checkpoint1");
             machines.forEach((k, v) -> {
                 String debugMsgLambda = "%s region/az has %d different vmtypes: %s".format(k, v.size(), v.toString());
                 LOGGER.info(debugMsgLambda);
@@ -72,7 +75,9 @@ public class TemplateValidator {
             LOGGER.info(debugMsg);
             convenientLogs.add(debugMsg);
             if (machines.containsKey(locationString) && !machines.get(locationString).isEmpty()) {
+                LOGGER.info("Checkpoint2");
                 for (VmType type : machines.get(locationString)) {
+                    LOGGER.info("Checkpoint3");
                     debugMsg = "template vmtype: %s available vmtype %s in this az/region".format(type.value(), template.getInstanceType());
                     LOGGER.info(debugMsg);
                     convenientLogs.add(debugMsg);
@@ -81,9 +86,11 @@ public class TemplateValidator {
                         break;
                     }
                 }
+                LOGGER.info("Checkpoint4");
                 if (vmType == null) {
                     throw new BadRequestException(
-                            String.format("The '%s' instance type isn't supported by '%s' platform", template.getInstanceType(), platform.value()));
+                            String.format("The '%s' instance type isn't supported by '%s' platform%n%s",
+                                    template.getInstanceType(), platform.value(), String.join("\t\n", convenientLogs)));
                 }
             }
             Map<Platform, Map<String, VolumeParameterType>> disks = diskMappings.get();
@@ -92,8 +99,8 @@ public class TemplateValidator {
                 volumeParameterType = map.get(template.getVolumeType());
                 if (volumeParameterType == null) {
                     throw new BadRequestException(
-                            String.format("The '%s' volume type isn't supported by '%s' platform%n%s",
-                                    template.getVolumeType(), platform.value(), String.join("\n", convenientLogs)));
+                            String.format("The '%s' volume type isn't supported by '%s' platform",
+                                    template.getVolumeType(), platform.value()));
                 }
             }
 
