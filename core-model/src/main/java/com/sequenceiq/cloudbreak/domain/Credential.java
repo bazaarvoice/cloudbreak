@@ -130,4 +130,13 @@ public class Credential implements ProvisionEntity {
     public void setTopology(Topology topology) {
         this.topology = topology;
     }
+
+    @Override
+    public String toString() {
+        return "Credential{"
+                + "id=" + id + ", name='" + name + '\'' + ", description='" + description + '\''
+                + ", owner='" + owner + '\'' + ", account='" + account + '\'' + ", publicInAccount=" + publicInAccount
+                + ", archived=" + archived + ", cloudPlatform='" + cloudPlatform + '\'' + ", attributes=" + attributes
+                + ", topology=" + topology + '}';
+    }
 }
