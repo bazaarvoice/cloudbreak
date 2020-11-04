@@ -58,9 +58,10 @@ public class TemplateValidator {
 
     public void validateTemplateRequest(Credential credential, Template template, String region, String availabilityZone, String variant) {
         LOGGER.info("Josh and Toby's logging attempt 4. validateTemplateRequest is invoked");
-
+        LOGGER.error("SUDHAKAR -- HERE");
+        LOGGER.error("SUDHAKAR -- credential >" + credential + "< region >" + region + "< variant >" + variant);
         CloudVmTypes cloudVmTypes = cloudParameterService.getVmTypesV2(credential, region, variant, new HashMap<>());
-
+        LOGGER.error("SUDHAKAR -- cloudVmTypes >" + cloudVmTypes);
         if (StringUtils.isEmpty(template.getInstanceType())) {
             validateCustomInstanceType(template);
         } else {
