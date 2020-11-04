@@ -35,22 +35,6 @@ public class Credential implements ProvisionEntity {
     @Column(nullable = false)
     private String account;
 
-    @Override
-    public String toString() {
-        return "Credential{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", owner='" + owner + '\'' +
-                ", account='" + account + '\'' +
-                ", publicInAccount=" + publicInAccount +
-                ", archived=" + archived +
-                ", cloudPlatform='" + cloudPlatform + '\'' +
-                ", attributes=" + attributes +
-                ", topology=" + topology +
-                '}';
-    }
-
     @Column(nullable = false)
     private boolean publicInAccount;
 
